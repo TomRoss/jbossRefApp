@@ -1,2 +1,9 @@
 jbossRefApp
 ===========
+
+This jbossRefApp repo is composed of demo applications that show technical JBoss behaviours on several aspects:
+- EJB
+- JPA
+- JMS
+- WebServices
+
