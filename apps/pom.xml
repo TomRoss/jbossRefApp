@@ -164,22 +164,22 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>2.3.0</version>
+			<version>${version.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.3.0</version>
+			<version>${version.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.3.0</version>
+			<version>${version.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jsonSchema</artifactId>
-			<version>2.3.0</version>
+			<version>${version.jackson}</version>
 		</dependency>
 	</dependencies>
 
@@ -188,5 +188,6 @@
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<version.jboss.spec.javaee.6.0>3.0.2.Final-redhat-5</version.jboss.spec.javaee.6.0>
 		<version.jboss.as>7.3.0.Final-redhat-8</version.jboss.as>
+		<version.jackson>2.3.0</version.jackson>
 	</properties>
 </project>
