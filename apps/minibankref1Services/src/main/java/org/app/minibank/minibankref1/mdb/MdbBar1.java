@@ -12,17 +12,20 @@ import javax.jms.TextMessage;
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref1.action.CallContext1;
 import org.app.minibank.minibankref1.action.IAction1;
+import org.jboss.ejb3.annotation.ResourceAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@ResourceAdapter("hornetq-ra-node_2")
 @MessageDriven(name = "MdbBar1", activationConfig = {
 
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        // In case of remoting you must use the queue name and not the JNDI name of the queue, as it uses the HornetQ Netty connetor.
+@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+// In case of remoting you must use the queue name and not the JNDI name of the queue, as it uses the HornetQ Netty connetor.
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "org.app.minibank.minibankref1.jms.QueueC"),
-        // WARNING: placeholders in annotations will not work! but work inside deployment descriptors .
-        @ActivationConfigProperty(propertyName = "connectorClassName", propertyValue = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"),
-        @ActivationConfigProperty(propertyName = "connectionParameters", propertyValue = "host=DEVPC016918;port=5349,host=DEVPC016918;port=5449")
+// WARNING: placeholders in annotations will not work! but work inside deployment descriptors .
+// @ActivationConfigProperty(propertyName = "connectorClassName", propertyValue =
+// "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"),
+// @ActivationConfigProperty(propertyName = "connectionParameters", propertyValue = "host=DEVPC016918;port=5349,host=DEVPC016918;port=5449")
 // @ActivationConfigProperty(propertyName = "clientID", propertyValue = "${jboss.node.name}")
 })
 public class MdbBar1 implements MessageListener {
