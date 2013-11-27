@@ -39,7 +39,7 @@ public class MdbBar1 implements MessageListener {
      * The pooled connection factory configured in the server configuration. 
      * Mapped name is set to JNDI name to enable the injection we expect
      */
-    @Resource(mappedName = "java:/RemoteJmsXA")
+    @Resource(mappedName = "java:/JmsXA/node_2")
     private ConnectionFactory connectionFactory;
 
     // @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueD")

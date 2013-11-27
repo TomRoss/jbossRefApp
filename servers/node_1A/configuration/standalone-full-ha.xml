@@ -466,7 +466,7 @@
                             <connector-ref connector-name="remote-jms-mgmt-node_2B"/>
                         </connectors>
                         <entries>
-                            <entry name="java:/RemoteJmsXA"/>
+                            <entry name="java:/JmsXA/node_2"/>
                         </entries>
                         <consumer-window-size>2097152</consumer-window-size>
                         <reconnect-attempts>-1</reconnect-attempts>
