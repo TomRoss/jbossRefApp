@@ -70,7 +70,7 @@ public class ClientMDBTest {
             connection = cf.createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             msgProducer = session.createProducer(destinationProducer);
-            //must create consumer before sending messages otherwise messages could be sent to the queue with no consumer in the cluster.
+            // must create consumer before sending messages otherwise messages could be sent to the queue with no consumer in the cluster.
             msgConsumer = session.createConsumer(destinationConsumer);
             connection.start();
 

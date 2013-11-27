@@ -16,7 +16,8 @@ public class EAP6NamingContext {
 
     public EAP6NamingContext(Properties props) throws NamingException {
         context = new InitialContext(props);
-        if (props.containsValue("org.jboss.ejb.client.naming")) {
+        // if (props.containsValue("org.jboss.ejb.client.naming")) {
+        if (props.containsKey("org.jboss.ejb.client.scoped.context")) {
             isEjbContext = true;
             jndiCtx = (Context) context.lookup("ejb:");
         }

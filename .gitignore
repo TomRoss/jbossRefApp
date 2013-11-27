@@ -39,6 +39,7 @@ target/
 log/
 tmp/
 data/
+standalone_xml_history/
 *.ear
 *.war
 *.deployed

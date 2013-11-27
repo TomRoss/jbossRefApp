@@ -77,49 +77,56 @@ public class TestUtil {
 
     public static Properties createProperties(String portNode1, String portNode2, String ejbClusterName, String user, String pass, boolean isejb) {
         Properties properties = new Properties();
+
+        properties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+
         if (isejb) {
-            properties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
             properties.put("org.jboss.ejb.client.scoped.context", "true");
-        } else {
-            properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-            properties.put(Context.PROVIDER_URL, "remote://" + HOSTNAME + ":" + portNode1 + "," + HOSTNAME + ":" + portNode2);
-            if (user != null) properties.put(Context.SECURITY_PRINCIPAL, user);
-            if (pass != null) properties.put(Context.SECURITY_CREDENTIALS, pass);
-        }
-        properties.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
-        properties.put("remote.connections", "one,two");
 
-        properties.put("remote.connection.one.host", HOSTNAME);
-        properties.put("remote.connection.one.port", portNode1);
-        properties.put("remote.connection.one.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "true");
-        properties.put("remote.connection.one.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-        if (user != null) properties.put("remote.connection.one.username", user);
-        if (pass != null) properties.put("remote.connection.one.password", pass);
+            properties.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
+            properties.put("remote.connections", "one,two");
 
-        properties.put("remote.connection.two.host", HOSTNAME);
-        properties.put("remote.connection.two.port", portNode2);
-        properties.put("remote.connection.two.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "true");
-        properties.put("remote.connection.two.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
-        if (user != null) properties.put("remote.connection.two.username", user);
-        if (pass != null) properties.put("remote.connection.two.password", pass);
+            properties.put("remote.connection.one.host", HOSTNAME);
+            properties.put("remote.connection.one.port", portNode1);
+            properties.put("remote.connection.one.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "true");
+            properties.put("remote.connection.one.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
+            if (user != null) properties.put("remote.connection.one.username", user);
+            if (pass != null) properties.put("remote.connection.one.password", pass);
 
-        if (isejb) {
+            properties.put("remote.connection.two.host", HOSTNAME);
+            properties.put("remote.connection.two.port", portNode2);
+            properties.put("remote.connection.two.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "true");
+            properties.put("remote.connection.two.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
+            if (user != null) properties.put("remote.connection.two.username", user);
+            if (pass != null) properties.put("remote.connection.two.password", pass);
+
             properties.put("remote.clusters", ejbClusterName);
             properties.put("remote.cluster." + ejbClusterName + ".connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "true");
             properties.put("remote.cluster." + ejbClusterName + ".connect.options.org.xnio.Options.SSL_ENABLED", "false");
             properties.put("remote.cluster." + ejbClusterName + ".connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
             if (user != null) properties.put("remote.cluster." + ejbClusterName + ".username", user);
             if (pass != null) properties.put("remote.cluster." + ejbClusterName + ".password", pass);
+
+        } else {
+            properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+            properties.put(Context.PROVIDER_URL, "remote://" + HOSTNAME + ":" + portNode1 + "," + HOSTNAME + ":" + portNode2);
+            if (user != null) properties.put(Context.SECURITY_PRINCIPAL, user);
+            if (pass != null) properties.put(Context.SECURITY_CREDENTIALS, pass);
+
+            properties.put("jboss.naming.client.remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
+            properties.put("jboss.naming.client.connect.options.org.xnio.Options.SSL_STARTTLS", "false");
+            properties.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "true");
+            properties.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         }
         return properties;
     }
 
     public static Properties createJmsProperties1() {
-        return createProperties("5101", "5201", "ejb", userguest, passguest, false);
+        return createProperties("5101", "5201", null, userguest, passguest, false);
     }
 
     public static Properties createJmsProperties2() {
-        return createProperties("5301", "5401", "ejb34", userguest, passguest, false);
+        return createProperties("5301", "5401", null, userguest, passguest, false);
     }
 
 }

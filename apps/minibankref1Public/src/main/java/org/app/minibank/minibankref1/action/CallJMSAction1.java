@@ -9,11 +9,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.AccountException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CallJMSAction1 extends BaseAction1 {
@@ -41,15 +41,18 @@ public class CallJMSAction1 extends BaseAction1 {
             if (sendToLocalQueue) {
                 queueD = cc.getLocalQueue();
             } else {
-                // we can't inject a destination, because the remote queue are <b>not</b> avialable in the local JNDI. 
+                // we can't inject a destination, because the remote queue are <b>not</b> avialable in the local JNDI.
                 // the only chance we have is to create the producer from the session.
-                // So we cannot use the JNDI name
-                // we could use:
-                //queueD = session.createQueue("org.app.minibank.minibankref1.jms.QueueD");
+                // So we cannot use the JNDI name like:
+                // InitialContext context = new InitialContext(remoteLookupProperties);
+                // queueD = (Queue) context.lookup("org/app/minibank/minibankref1/jms/QueueD");
 
-                // but as the queue is remote we need to do:
-                InitialContext context = new InitialContext(remoteLookupProperties);
-                queueD = (Queue) context.lookup("org/app/minibank/minibankref1/jms/QueueD");
+                // otherwise we get: javax.naming.NamingException: JBAS011843: Failed instantiate InitialContextFactory
+                // org.jboss.naming.remote.client.InitialContextFactory from classloader ModuleClassLoader for Module
+                // "deployment.minibankref1-3.0.0-SNAPSHOT.ear.minibankref1Services-3.0.0-SNAPSHOT.jar:main" from Service Module Loader
+
+                // so we have to use:
+                queueD = (Queue) session.createQueue("org.app.minibank.minibankref1.jms.QueueD");
             }
             messageProducer = session.createProducer(queueD);
             connection.start();
@@ -62,9 +65,10 @@ public class CallJMSAction1 extends BaseAction1 {
             messageOut.setText(resultJson);
             messageProducer.send(messageOut);
 
-        } catch (Exception e) {
-            log.error("" + e, e);
-            cc.getEjbContext().setRollbackOnly();
+        } catch (JMSException e) {
+            throw new RuntimeException("Error when sending JMS message processing: " + e, e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error when Processing JSon message: " + e, e);
         } finally {
             try {
                 if (connection != null) connection.close();

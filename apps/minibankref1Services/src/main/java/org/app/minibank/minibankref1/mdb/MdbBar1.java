@@ -16,12 +16,14 @@ import org.app.minibank.minibankref1.action.IAction1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @MessageDriven(name = "MdbBar1", activationConfig = {
+
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "org/app/minibank/minibankref1/jms/QueueC"),
+        // In case of remoting you must use the queue name and not the JNDI name of the queue, as it uses the HornetQ Netty connetor.
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "org.app.minibank.minibankref1.jms.QueueC"),
         // WARNING: placeholders in annotations will not work! but work inside deployment descriptors .
         @ActivationConfigProperty(propertyName = "connectorClassName", propertyValue = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"),
-        @ActivationConfigProperty(propertyName = "connectionParameters", propertyValue = "host=devpc016918;port=5349,host=devpc016918;port=5449")
-// @ActivationConfigProperty(propertyName = "clientID", propertyValue = "${jboss.node.name}") 
+        @ActivationConfigProperty(propertyName = "connectionParameters", propertyValue = "host=DEVPC016918;port=5349,host=DEVPC016918;port=5449")
+// @ActivationConfigProperty(propertyName = "clientID", propertyValue = "${jboss.node.name}")
 })
 public class MdbBar1 implements MessageListener {
 
@@ -37,8 +39,8 @@ public class MdbBar1 implements MessageListener {
     @Resource(mappedName = "java:/RemoteJmsXA")
     private ConnectionFactory connectionFactory;
 
-    //    @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueD")
-    //    private Queue queueD;
+    // @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueD")
+    // private Queue queueD;
 
     public void onMessage(Message message) {
         if (!(message instanceof TextMessage)) {
