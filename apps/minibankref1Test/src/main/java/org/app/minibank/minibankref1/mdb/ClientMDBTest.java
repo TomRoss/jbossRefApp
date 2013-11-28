@@ -1,5 +1,6 @@
 package org.app.minibank.minibankref1.mdb;
 
+import java.util.Enumeration;
 import java.util.Map;
 
 import javax.jms.Connection;
@@ -8,6 +9,8 @@ import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.NamingException;
@@ -94,7 +97,7 @@ public class ClientMDBTest {
             }
 
             int nbMessageRead = 0;
-            while (true) {
+            while (nbMessageRead != 0) {
                 Message m = msgConsumer.receive(2000);
                 if (m != null) {
                     if (m instanceof TextMessage) {
@@ -119,5 +122,44 @@ public class ClientMDBTest {
             if (session != null) session.close();
             if (connection != null) connection.close();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void browseRemoteQueueOnNode2Test() throws Exception {
+        Connection connection = null;
+        Session session = null;
+        MessageProducer msgProducer = null;
+        long start = System.currentTimeMillis();
+        try {
+
+            ConnectionFactory cf = (ConnectionFactory) ctx2.lookup("jms/RemoteConnectionFactory");
+            Destination destination = (Destination) ctx2.lookup("org/app/minibank/minibankref1/jms/QueueD");
+            connection = cf.createConnection();
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            msgProducer = session.createProducer(destination);
+
+            QueueBrowser qb = session.createBrowser((Queue) destination);
+            int msgCounter = 0;
+            Enumeration<Message> queueEnum = qb.getEnumeration();
+            while (queueEnum.hasMoreElements()) {
+                Message msg = (Message) queueEnum.nextElement();
+                if (!(msg instanceof TextMessage)) {
+                    throw new RuntimeException("message is not a text message but " + msg.getClass());
+                }
+                String txtMsg = ((TextMessage) msg).getText();
+                log.info("Queue contains Message with: " + txtMsg);
+                msgCounter++;
+            }
+            log.info("In total the queue now contains " + msgCounter + " Messages to process");
+        } finally {
+            if (msgProducer != null) msgProducer.close();
+            if (session != null) session.close();
+            if (connection != null) connection.close();
+        }
+
+        long end = System.currentTimeMillis();
+        log.info("Queue browsed in " + (end - start) + " ms");
+
     }
 }

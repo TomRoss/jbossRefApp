@@ -342,8 +342,6 @@
                         <param key="connect-timeout-millis" value="${hornetq.remoting.netty.connectTimeout:30000}"/>
                     </netty-connector>
                     <in-vm-connector name="in-vm" server-id="0"/>
-                    <netty-connector name="remote-jms-mgmt-node1" socket-binding="remote-jms-binding-node1"/>
-                    <netty-connector name="remote-jms-mgmt-node2" socket-binding="remote-jms-binding-node2"/>
                 </connectors>
 
                 <acceptors>
@@ -451,22 +449,6 @@
                         </connectors>
                         <entries>
                             <entry name="java:/JmsXA"/>
-                        </entries>
-                        <consumer-window-size>2097152</consumer-window-size>
-                        <reconnect-attempts>-1</reconnect-attempts>
-                    </pooled-connection-factory>
-                    <pooled-connection-factory name="hornetq-remote-ra">
-                        <inbound-config>
-                            <setup-attempts>-1</setup-attempts>
-                            <setup-interval>30000</setup-interval>
-                        </inbound-config>
-                        <transaction mode="xa"/>
-                        <connectors>
-                            <connector-ref connector-name="remote-jms-mgmt-node1"/>
-                            <connector-ref connector-name="remote-jms-mgmt-node2"/>
-                        </connectors>
-                        <entries>
-                            <entry name="java:/RemoteJmsXA"/>
                         </entries>
                         <consumer-window-size>2097152</consumer-window-size>
                         <reconnect-attempts>-1</reconnect-attempts>
@@ -601,12 +583,6 @@
         <socket-binding name="messaging-stomp" port="5064"/>
         <outbound-socket-binding name="mail-smtp">
             <remote-destination host="localhost" port="25"/>
-        </outbound-socket-binding>
-        <outbound-socket-binding name="remote-jms-binding-node1">
-            <remote-destination host="${jboss.bind.address:127.0.0.1}" port="5149"/>
-        </outbound-socket-binding>
-		<outbound-socket-binding name="remote-jms-binding-node2">
-            <remote-destination host="${jboss.bind.address:127.0.0.1}" port="5249"/>
         </outbound-socket-binding>
     </socket-binding-group>
 
