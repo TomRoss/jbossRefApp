@@ -43,8 +43,8 @@ standalone_xml_history/
 servers/*/configuration/logging.properties
 *.ear
 *.war
-*.deployed
-*.failed
+*.ear.*
+*.war.*
 
 #################
 ## Subversion
