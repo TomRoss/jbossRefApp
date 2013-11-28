@@ -1,7 +1,10 @@
-SET JAVA_HOME=E:\projects\jboss\jdk\64\1.7.0_45
-SET EAP_HOME=E:\projects\jboss\installation\EAP-6.2.0-beta1
+IF EXIST ../../customize/customize.cmd CALL ../../customize/customize.cmd
+IF "%JAVA_HOME%"=="" ECHO ERROR: JAVA_HOME must be set. You can set it in ../../customize/customize.cmd
+IF "%EAP_HOME%"=="" ECHO ERROR: EAP_HOME must be set. You can set it in ../../customize/customize.cmd
 SET JBOSS_HOME=%EAP_HOME%
-set CONTAINER_TYPE_VERSION=620
 
-SET HOSTNAME=%COMPUTERNAME%
-REM SET HOSTNAME=0.0.0.0 => do not work with cluster!
+ECHO.
+ECHO JAVA_HOME=%JAVA_HOME%
+ECHO EAP_HOME=%EAP_HOME%
+ECHO JBOSS_HOME=%JBOSS_HOME%
+ECHO.

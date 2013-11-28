@@ -1,0 +1,18 @@
+@ECHO OFF
+SETLOCAL
+call ..\common.cmd
+
+SET NATIVE_ADMIN_PORT=5504
+SET JBOSS_SERVER_NAME=node_1A
+
+title %JBOSS_SERVER_NAME%
+
+SET CMDLINE=%EAP_HOME%\bin\jboss-cli.bat
+SET CMDLINE=%CMDLINE% --connect
+SET CMDLINE=%CMDLINE% --controller=localhost:%NATIVE_ADMIN_PORT%
+SET CMDLINE=%CMDLINE% --command=:shutdown
+
+ECHO %CMDLINE%
+call %CMDLINE%
+
+ENDLOCAL
