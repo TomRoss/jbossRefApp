@@ -97,7 +97,7 @@ public class ClientMDBTest {
             }
 
             int nbMessageRead = 0;
-            while (nbMessageRead != 0) {
+            while (true) {
                 Message m = msgConsumer.receive(2000);
                 if (m != null) {
                     if (m instanceof TextMessage) {

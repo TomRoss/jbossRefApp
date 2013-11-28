@@ -184,6 +184,7 @@
 	</dependencies>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>	
 		<maven.compiler.target>1.6</maven.compiler.target>
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<version.jboss.spec.javaee.6.0>3.0.2.Final-redhat-5</version.jboss.spec.javaee.6.0>
