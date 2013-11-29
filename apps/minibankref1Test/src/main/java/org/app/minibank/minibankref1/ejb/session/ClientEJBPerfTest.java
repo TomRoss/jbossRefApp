@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.TestUtil;
 import org.app.minibank.minibankref1.action.BaseAction1;
 import org.app.minibank.minibankref1.action.CallRemote2UnsecuredAction1;
-import org.app.minibank.minibankref1.ejb.session.Foo1Remote;
 import org.app.minibank.minibankref2.action.BaseAction2;
 import org.app.minibank.minibankref2.ejb.session.Foo2Remote;
 import org.junit.Before;
