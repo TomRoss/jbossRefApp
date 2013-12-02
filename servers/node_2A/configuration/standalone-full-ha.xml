@@ -76,11 +76,27 @@
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
-        <access-control provider="simple">
+        <access-control provider="rbac">
             <role-mapping>
                 <role name="SuperUser">
                     <include>
                         <user name="$local"/>
+                        <user name="root"/>
+                    </include>
+                </role>
+                <role name="Administrator">
+                    <include>
+                        <group name="administration"/>
+                    </include>
+                </role>
+                <role name="Deployer">
+                    <include>
+                        <group name="deployment"/>
+                    </include>
+                </role>
+                <role name="Monitor">
+                    <include>
+                        <user name="monitoring"/>
                     </include>
                 </role>
             </role-mapping>
@@ -148,6 +164,7 @@
         <subsystem xmlns="urn:jboss:domain:ee:1.1">
             <global-modules>
                 <module name="org.jboss.xnio" slot="main"/>
+                <module name="org.jboss.remoting-jmx" slot="main"/>
             </global-modules>
             <spec-descriptor-property-replacement>true</spec-descriptor-property-replacement>
             <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>

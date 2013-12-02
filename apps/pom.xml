@@ -84,10 +84,11 @@
 								java.lang.IllegalArgumentException: Class 'org.xnio.Options' not found
 								ERROR [org.jboss.remoting.remote.connection] (Remoting "config-based-ejb-client-endpoint" read-1) JBREM000200: Remote connection failed: javax.net.ssl.SSLException:
 								Unrecognized SSL message, plaintext connection?
+								this dependency has been added in the standalone-full-ha.xml file in the global-modules section
+								<manifestEntries>
+									<Dependencies>org.jboss.xnio</Dependencies>
+								</manifestEntries>
 							-->
-							<manifestEntries>
-								<Dependencies>org.jboss.xnio</Dependencies>
-							</manifestEntries>
 						</archive>
 					</configuration>
 				</plugin>

@@ -6,7 +6,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
+
 public class EAP6NamingContext {
+
+    private static final Logger log = Logger.getLogger(EAP6NamingContext.class);
 
     Context jndiCtx;
 
@@ -32,8 +36,15 @@ public class EAP6NamingContext {
     }
 
     public void close() throws NamingException {
+        if (ejbRootNamingContext != null) {
+            try {
+                ejbRootNamingContext.close();
+            } catch (Exception e) {
+                // log and ignore
+                log.error(e.getMessage(), e);
+            }
+        }
         if (jndiCtx != null) jndiCtx.close();
-        if (ejbRootNamingContext != null) ejbRootNamingContext.close();
     }
 
 }

@@ -129,4 +129,19 @@ public class TestUtil {
         return createProperties("5301", "5401", null, userguest, passguest, false);
     }
 
+    public static String getJmxUrl1A() {
+        return "service:jmx:remoting-jmx://localhost:5104";
+    }
+
+    public static String getJmxUrl1B() {
+        return "service:jmx:remoting-jmx://localhost:5204";
+    }
+
+    public static String getJmxUrl2A() {
+        return "service:jmx:remoting-jmx://localhost:5304";
+    }
+
+    public static String getJmxUrl2B() {
+        return "service:jmx:remoting-jmx://localhost:5404";
+    }
 }
