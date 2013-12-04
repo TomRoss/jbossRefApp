@@ -84,17 +84,17 @@
                         <user name="root"/>
                     </include>
                 </role>
-				<role name="Administrator">
+                <role name="Administrator">
                     <include>
                         <group name="administration"/>
                     </include>
                 </role>
-				<role name="Deployer">
+                <role name="Deployer">
                     <include>
                         <group name="deployment"/>
                     </include>
                 </role>
-				<role name="Monitor">
+                <role name="Monitor">
                     <include>
                         <user name="monitoring"/>
                     </include>

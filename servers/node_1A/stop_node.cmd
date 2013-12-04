@@ -1,11 +1,7 @@
 @ECHO OFF
 SETLOCAL
-call ..\common.cmd
-
-SET NATIVE_ADMIN_PORT=5104
-SET JBOSS_SERVER_NAME=node_1A
-
-title %JBOSS_SERVER_NAME%
+SET SET_ENV_ONLY=true
+CALL start_node.cmd
 
 SET CMDLINE=%EAP_HOME%\bin\jboss-cli.bat
 SET CMDLINE=%CMDLINE% --connect
