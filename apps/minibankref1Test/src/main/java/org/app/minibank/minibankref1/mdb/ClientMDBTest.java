@@ -152,6 +152,8 @@ public class ClientMDBTest {
                 msgCounter++;
             }
             log.info("In total the queue now contains " + msgCounter + " Messages to process");
+            destination = null;
+            cf = null;
         } finally {
             if (msgProducer != null) msgProducer.close();
             if (session != null) session.close();

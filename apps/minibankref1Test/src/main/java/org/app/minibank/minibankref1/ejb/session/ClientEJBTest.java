@@ -22,7 +22,6 @@ import org.app.minibank.minibankref1.action.CallRemote2UnsecuredAction1;
 import org.app.minibank.minibankref1.action.CallRemote3UnsecuredAction1;
 import org.app.minibank.minibankref1.action.IAction1;
 import org.app.minibank.minibankref1.action.SequenceAction1;
-import org.app.minibank.minibankref1.ejb.session.Foo1Remote;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

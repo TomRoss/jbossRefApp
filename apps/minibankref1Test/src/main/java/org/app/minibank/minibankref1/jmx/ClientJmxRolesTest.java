@@ -14,6 +14,7 @@ import org.app.minibank.minibankref.EAP6NamingContext;
 import org.app.minibank.minibankref.TestUtil;
 import org.app.minibank.minibankref1.action.CallJMXAction1;
 import org.app.minibank.minibankref1.ejb.session.Foo1Remote;
+import org.app.minibank.minibankref1.mbean.FooAdmin;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -453,6 +454,100 @@ public class ClientJmxRolesTest {
             assertTrue(!e.getMessage().contains(UNAUTHORIZED));
         }
 
+    }
+
+    @Test
+    public void testAdminInvokeApp() throws Exception {
+
+        CallJMXAction1 action = new CallJMXAction1();
+
+        action.setCurrentJmxOperation(CallJMXAction1.JMX_OPERATION.INVOKE);
+        action.setObjectName("org.app.minibank:type=" + FooAdmin.class.getName());
+        action.setOperationName("complexMethod");
+        action.setParams(new Object[] { 1, new Integer(2), true, new Double(3.0), "Some Text" });
+        action.setSignature(new String[] { int.class.getName(), Integer.class.getName(), boolean.class.getName(), Double.class.getName(),
+                String.class.getName() });
+
+        HashMap<String, Object> env = new HashMap<String, Object>();
+        String[] credentials = new String[2];
+        credentials[0] = ADMINISTRATOR_USER;
+        credentials[1] = ADMINISTRATOR_PASSWORD;
+        env.put("jmx.remote.credentials", credentials);
+        action.setEnv(env);
+
+        action.setConnectionUrlString(JMX_REMOTING_URL);
+
+        Foo1Remote service = getFoo1Remote();
+
+        Object obj = service.defaultTxPropagation(action);
+        log.info(obj);
+
+    }
+
+    @Test
+    public void testAdminGetAttributeApp() throws Exception {
+
+        CallJMXAction1 action = new CallJMXAction1();
+
+        action.setCurrentJmxOperation(CallJMXAction1.JMX_OPERATION.GET_ATTRIBUTE);
+        action.setObjectName("org.app.minibank:type=" + FooAdmin.class.getName());
+        action.setAttribute("FooAdmins");
+
+        HashMap<String, Object> env = new HashMap<String, Object>();
+        String[] credentials = new String[2];
+        credentials[0] = ADMINISTRATOR_USER;
+        credentials[1] = ADMINISTRATOR_PASSWORD;
+        env.put("jmx.remote.credentials", credentials);
+        action.setEnv(env);
+
+        action.setConnectionUrlString(JMX_REMOTING_URL);
+
+        Foo1Remote service = getFoo1Remote();
+
+        Object obj = service.defaultTxPropagation(action);
+        log.info(obj);
+
+    }
+
+    @Test
+    public void testAdminSetAttributeApp() throws Exception {
+
+        String testValue = new Double(Math.random()).toString();
+
+        CallJMXAction1 action = new CallJMXAction1();
+
+        action.setCurrentJmxOperation(CallJMXAction1.JMX_OPERATION.SET_ATTRIBUTE);
+        action.setObjectName("org.app.minibank:type=" + FooAdmin.class.getName());
+        action.setAttributeName("MyStringAttribute");
+        action.setAttributeValue(testValue);
+
+        HashMap<String, Object> env = new HashMap<String, Object>();
+        String[] credentials = new String[2];
+        credentials[0] = ADMINISTRATOR_USER;
+        credentials[1] = ADMINISTRATOR_PASSWORD;
+        env.put("jmx.remote.credentials", credentials);
+        action.setEnv(env);
+
+        action.setConnectionUrlString(JMX_REMOTING_URL);
+        Foo1Remote service = getFoo1Remote();
+        Object obj = service.defaultTxPropagation(action);
+
+        // now read the attribute again
+
+        CallJMXAction1 actionGet = new CallJMXAction1();
+        actionGet.setCurrentJmxOperation(CallJMXAction1.JMX_OPERATION.GET_ATTRIBUTE);
+        actionGet.setObjectName("org.app.minibank:type=" + FooAdmin.class.getName());
+        actionGet.setAttribute("MyStringAttribute");
+
+        actionGet.setEnv(env);
+
+        actionGet.setConnectionUrlString(JMX_REMOTING_URL);
+
+        service = getFoo1Remote();
+
+        obj = service.defaultTxPropagation(actionGet);
+        log.info(obj);
+        assertTrue(testValue.equals(obj));
     }
 
 }

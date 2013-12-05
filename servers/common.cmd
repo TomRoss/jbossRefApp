@@ -21,7 +21,6 @@ SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.node.name=%COMPUTERNAME%_%OFFSET%"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djgroups.bind_addr=%COMPUTERNAME%"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.udp.fixedport=true"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.messaging.group.address=%UDP_ADDR%"
-ECHO NOPAUSE = %NOPAUSE%
 REM we are running the EAP instance through the Windows Service so we don't want to display log to console
 IF "%NOPAUSE%" == "Y" SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.console.threshold=OFF"
 SET "JAVA_OPTS=%JAVA_OPTS% %JAVA_OPTS_POST%"
