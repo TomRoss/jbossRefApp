@@ -19,6 +19,7 @@
 		<module>minibankref3Services</module>
 		<module>minibankref3Test</module>
 		<module>minibankrefCommon</module>
+		<module>minibankrefSecurity</module>
 	</modules>
 	<scm>
 		<connection>scm:git:git://github.com/myannou/jbossRefApp.git</connection>
