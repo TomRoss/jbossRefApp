@@ -15,6 +15,6 @@ if [ "$1" != "NOBUILD" ]; then
     $MVN_CMD install -am -pl minibankref1
 fi
 
-cp ./minibankref1/target/minibankref1-*.ear ./servers/node_1A/deployments
-cp ./minibankref1/target/minibankref1-*.ear ./servers/node_1B/deployments
+cp ./minibankref1/target/minibankref1-*.ear ../servers/node_1A/deployments
+cp ./minibankref1/target/minibankref1-*.ear ../servers/node_1B/deployments
 
