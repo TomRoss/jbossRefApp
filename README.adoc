@@ -8,3 +8,4 @@ This jbossRefApp repo is composed of demo applications that show technical JBoss
 - JMS
 - WebServices
 
+coucou
