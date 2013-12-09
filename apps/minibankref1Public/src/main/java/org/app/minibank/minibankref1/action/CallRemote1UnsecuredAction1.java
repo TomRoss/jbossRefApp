@@ -12,7 +12,7 @@ public class CallRemote1UnsecuredAction1 extends CallRemoteAction1 {
         Foo1Remote remote1 = narrowObject(service, Foo1Remote.class);
         Object result = remote1.defaultTxPropagation(new BaseAction1());
         cc.getResult().put("CALL", result);
-        // mytest9
+        // mytest10
         return cc.getResult();
     }
 
