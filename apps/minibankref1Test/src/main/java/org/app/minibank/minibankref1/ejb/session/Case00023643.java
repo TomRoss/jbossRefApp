@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.EAP6NamingContext;
 import org.app.minibank.minibankref.TestUtil;
 import org.app.minibank.minibankref1.action.CallRemote2UnsecuredAction1;
-import org.app.minibank.minibankref1.ejb.session.Foo1Remote;
 import org.app.minibank.minibankref2.action.BaseAction2;
 import org.app.minibank.minibankref2.ejb.session.Foo2Remote;
 import org.junit.Assert;
@@ -21,6 +20,8 @@ public class Case00023643 {
     @SuppressWarnings("unchecked")
     @Test
     public void callForwardScenarioJune14() throws Exception {
+
+        // coucou
 
         log.info("calling cluster 2 with sleep = 60 secs");
 
