@@ -26,7 +26,7 @@ public class BaseAction1 implements IAction1 {
 
     long pauseAfter = 0;
 
-    int callId = 0;;
+    int callId = 0;
 
     @Override
     public Object doIt(CallContext1 cc) throws AccountException {
