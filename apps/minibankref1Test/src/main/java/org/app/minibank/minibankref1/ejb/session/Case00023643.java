@@ -21,8 +21,6 @@ public class Case00023643 {
     @Test
     public void callForwardScenarioJune14() throws Exception {
 
-        // coucou
-
         log.info("calling cluster 2 with sleep = 60 secs");
 
         new Thread() {
