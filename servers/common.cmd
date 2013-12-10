@@ -21,6 +21,7 @@ SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.node.name=%COMPUTERNAME%_%OFFSET%"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djgroups.bind_addr=%COMPUTERNAME%"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.udp.fixedport=true"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.messaging.group.address=%UDP_ADDR%"
+
 REM we are running the EAP instance through the Windows Service so we don't want to display log to console
 IF "%NOPAUSE%" == "Y" SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.console.threshold=OFF"
 SET "JAVA_OPTS=%JAVA_OPTS% %JAVA_OPTS_POST%"
@@ -32,6 +33,8 @@ SET ARGLINE=%ARGLINE% --server-config standalone-full-ha.xml
 SET ARGLINE=%ARGLINE% %ARGLINE_POST%
 
 SET NATIVE_DIR=%EAP_HOME%\modules\system\layers\base\native
+SET CUSTOM_MODULE=%CURRENT_DIR%modules
+IF EXIST %CUSTOM_MODULE% SET JBOSS_MODULEPATH=%EAP_HOME%\modules;%CUSTOM_MODULE%
 
 ECHO.
 ECHO JAVA_HOME=%JAVA_HOME%
@@ -39,4 +42,5 @@ ECHO EAP_HOME=%EAP_HOME%
 ECHO JBOSS_HOME=%JBOSS_HOME%
 ECHO JAVA_OPTS=%JAVA_OPTS%
 ECHO ARGLINE=%ARGLINE%
+ECHO JBOSS_MODULEPATH=%JBOSS_MODULEPATH%
 ECHO.

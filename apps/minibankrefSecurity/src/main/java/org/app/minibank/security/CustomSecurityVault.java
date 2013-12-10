@@ -25,6 +25,11 @@ import org.jboss.security.Base64Utils;
 import org.jboss.security.vault.SecurityVaultException;
 
 /**
+ * Simple implementation of a custom vault. 
+ * It's intention is to give demonstration how to implement and configure, but not to be safe.
+ * It uses snychronise encryption algorithm as provided with JDK to avoid storing clear text passwords.
+ * To manage the passwords a simple default properties file is used.
+ * 
  * @version $Revision:$.
  * @author arteconsult.
  * @last.author $Author:$.
