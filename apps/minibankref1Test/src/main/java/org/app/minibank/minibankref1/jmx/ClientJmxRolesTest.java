@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -60,6 +61,23 @@ public class ClientJmxRolesTest {
 
     private Foo1Remote getFoo1Remote() throws NamingException {
         return (Foo1Remote) ctx.lookup(TestUtil.getJndi1());
+    }
+
+    @Test
+    public void directMBean() throws Exception {
+        ObjectName objectName = new ObjectName("java.lang:type=Memory");
+        Map<String, Object> env = new HashMap<String, Object>();
+        String[] credentials = new String[] { MONITORING_USER, MONITORING_PASSWORD };
+        env.put("jmx.remote.credentials", credentials);
+        String connectionUrlString = JMX_REMOTING_URL;
+
+        JMXServiceURL url = new JMXServiceURL(connectionUrlString);
+        JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+        jmxc.connect();
+
+        Object value = jmxc.getMBeanServerConnection().getAttribute(objectName, "HeapMemoryUsage");
+        log.info("HeapMemoryUsage=" + value);
+        jmxc.close();
     }
 
     @Test
