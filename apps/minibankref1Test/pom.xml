@@ -11,6 +11,12 @@
 			<groupId>org.jboss.as</groupId>
 			<artifactId>jboss-as-jmx</artifactId>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>log4j-jboss-logmanager</artifactId>
+					<groupId>org.jboss.logmanager</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
