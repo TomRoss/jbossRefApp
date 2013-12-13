@@ -8,6 +8,11 @@
 	<artifactId>minibankref1Test</artifactId>
 	<dependencies>
 		<dependency>
+			<groupId>org.jboss.as</groupId>
+			<artifactId>jboss-as-jmx</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>minibankref1Public</artifactId>
 			<version>${project.version}</version>
