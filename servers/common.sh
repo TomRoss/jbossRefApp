@@ -77,10 +77,18 @@ declare -x ARGLINE="$ARGLINE $ARGLINE_POST"
 
 declare -x NATIVE_DIR="$EAP_HOME/modules/system/layers/base/native"
 
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+   CUSTOM_MODULE="$CURRENTDIR/modules"
+   if [ -d "$CUSTOM_MODULE"  ]; then
+      declare -x JBOSS_MODULEPATH="$EAP_HOME/modules:$CUSTOM_MODULE"
+   fi
+fi
+
 echo ""
 echo "JAVA_HOME=$JAVA_HOME"
 echo "EAP_HOME=$EAP_HOME"
 echo "JBOSS_HOME=$JBOSS_HOME"
 echo "JAVA_OPTS=$JAVA_OPTS"
 echo "ARGLINE=$ARGLINE"
+echo "JBOSS_MODULEPATH=$JBOSS_MODULEPATH"
 echo ""
