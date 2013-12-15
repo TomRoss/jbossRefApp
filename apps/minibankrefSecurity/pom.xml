@@ -11,7 +11,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.picketbox</groupId>
-			<artifactId>picketbox</artifactId>			
+			<artifactId>picketbox</artifactId>		
+			<scope>provided</scope>	
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

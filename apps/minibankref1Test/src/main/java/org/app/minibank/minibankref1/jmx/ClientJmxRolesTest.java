@@ -2,10 +2,16 @@ package org.app.minibank.minibankref1.jmx;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
@@ -55,6 +61,23 @@ public class ClientJmxRolesTest {
 
     private Foo1Remote getFoo1Remote() throws NamingException {
         return (Foo1Remote) ctx.lookup(TestUtil.getJndi1());
+    }
+
+    @Test
+    public void directMBean() throws Exception {
+        ObjectName objectName = new ObjectName("java.lang:type=Memory");
+        Map<String, Object> env = new HashMap<String, Object>();
+        String[] credentials = new String[] { MONITORING_USER, MONITORING_PASSWORD };
+        env.put("jmx.remote.credentials", credentials);
+        String connectionUrlString = JMX_REMOTING_URL;
+
+        JMXServiceURL url = new JMXServiceURL(connectionUrlString);
+        JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+        jmxc.connect();
+
+        Object value = jmxc.getMBeanServerConnection().getAttribute(objectName, "HeapMemoryUsage");
+        log.info("HeapMemoryUsage=" + value);
+        jmxc.close();
     }
 
     @Test
@@ -548,6 +571,34 @@ public class ClientJmxRolesTest {
         obj = service.defaultTxPropagation(actionGet);
         log.info(obj);
         assertTrue(testValue.equals(obj));
+    }
+
+    @Test
+    public void testDirectJMXCallFromJunit() throws Exception {
+        JMXConnector jmxc = null;
+        try {
+            JMXServiceURL url = new JMXServiceURL(JMX_REMOTING_URL);
+            HashMap<String, Object> env = new HashMap<String, Object>();
+            String[] credentials = new String[2];
+            credentials[0] = ADMINISTRATOR_USER;
+            credentials[1] = ADMINISTRATOR_PASSWORD;
+            env.put("jmx.remote.credentials", credentials);
+            jmxc = JMXConnectorFactory.connect(url, env);
+            jmxc.connect();
+            ObjectName objName = new ObjectName("org.app.minibank:type=" + FooAdmin.class.getName());
+            Object value = jmxc.getMBeanServerConnection().getAttribute(objName, "MyStringAttribute");
+
+            log.info("MyStringAttribute=" + value);
+
+        } finally {
+            if (jmxc != null) try {
+                jmxc.close();
+            } catch (IOException e) {
+                log.warn("Could not close jmx connection", e);
+            }
+
+        }
+
     }
 
 }
