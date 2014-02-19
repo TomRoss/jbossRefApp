@@ -28,5 +28,9 @@
 			<artifactId>junit</artifactId>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jacorb</groupId>
+			<artifactId>jacorb</artifactId>
+		</dependency>
 	</dependencies>
 </project>
