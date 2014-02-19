@@ -11,8 +11,6 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
-import org.app.minibank.minibankref1.Arte.ICalc;
-import org.app.minibank.minibankref1.corba.CalcCorbaServicePOA;
 import org.app.minibank.minibankref1.mbean.FooAdmin;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
@@ -31,10 +29,6 @@ public class StartupSingletonEjb {
 
     ObjectName fooAdminObjectName = null;
 
-    byte[] servantPOAKey;
-
-    CalcCorbaServicePOA servant = new CalcCorbaServicePOA();
-
     @PostConstruct
     public void startService() {
         log.info("Post Start Application");
@@ -49,7 +43,6 @@ public class StartupSingletonEjb {
             throw new IllegalStateException("Problem during registration of Monitoring into JMX:" + e);
         }
 
-        servantPOAKey = register(servant, ICalc.DEFAULT_NS_PATH);
     }
 
     @PreDestroy
@@ -64,10 +57,9 @@ public class StartupSingletonEjb {
             throw new IllegalStateException("Problem during unregistration of Monitoring into JMX:" + e);
         }
 
-        unregisterServant(servant, ICalc.DEFAULT_NS_PATH, servantPOAKey);
     }
 
-    private static byte[] register(Servant servant, String nsPath) {
+    static byte[] register(Servant servant, String nsPath) {
         byte[] servantPOAKey = null;
         try {
             InitialContext ctx = new InitialContext();
@@ -91,7 +83,7 @@ public class StartupSingletonEjb {
         }
     }
 
-    public static void createContext(String nsPath, NamingContextExt root) throws Exception {
+    static void createContext(String nsPath, NamingContextExt root) throws Exception {
         NameComponent[] fullName = root.to_name(nsPath);
         NamingContext ctx = root;
         for (int i = 0; i < fullName.length - 1; i++) {
