@@ -165,6 +165,8 @@
             <global-modules>
                 <module name="org.jboss.xnio" slot="main"/>
                 <module name="org.jboss.remoting-jmx" slot="main"/>
+				<module name="org.jboss.remote-naming" slot="main"/> <!-- to be able to do a remote lookup -->
+				<module name="org.hornetq" slot="main"/> <!-- to be able to lookup a remote queue -->
             </global-modules>
             <spec-descriptor-property-replacement>true</spec-descriptor-property-replacement>
             <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>
