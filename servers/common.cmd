@@ -21,6 +21,9 @@ SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.node.name=%COMPUTERNAME%_%OFFSET%"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djgroups.bind_addr=%COMPUTERNAME%"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.udp.fixedport=true"
 SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.messaging.group.address=%UDP_ADDR%"
+REM use to avoid Warning - unknown codeset (Cp1252) - defaulting to ISO-8859-1
+SET "JAVA_OPTS=%JAVA_OPTS% -Djacorb.native_char_codeset=UTF8"
+SET "JAVA_OPTS=%JAVA_OPTS% -Djacorb.native_wchar_codeset=UTF16"
 
 REM we are running the EAP instance through the Windows Service so we don't want to display log to console
 IF "%NOPAUSE%" == "Y" SET "JAVA_OPTS=%JAVA_OPTS% -Djboss.console.threshold=OFF"
