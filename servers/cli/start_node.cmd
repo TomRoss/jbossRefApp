@@ -1,0 +1,22 @@
+@ECHO OFF
+
+SET OFFSET=100
+SET JBOSS_SERVER_NAME=node_1A
+SET UDP_ADDR=239.0.1.1
+
+SET CURRENT_DIR=%~dp0
+SET JBOSS_BASE_DIR=%CURRENT_DIR:~0,-1%
+title CLI %JBOSS_SERVER_NAME%
+
+set ARGLINE_POST=--admin-only --properties=CLI_node_1A.properties
+
+SET SET_ENV_ONLY=true
+CALL ..\common.cmd
+SET SET_ENV_ONLY=false
+
+
+SET CMDLINE=%EAP_HOME%\bin\standalone.bat %ARGLINE%
+
+IF NOT "%SET_ENV_ONLY%" == "true" ECHO %CMDLINE%
+IF NOT "%SET_ENV_ONLY%" == "true" CALL %CMDLINE%
+

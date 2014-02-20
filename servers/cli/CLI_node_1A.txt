@@ -1,0 +1,63 @@
+batch
+
+# Configure Role Based Access Control and activate
+/core-service=management/access=authorization/role-mapping=SuperUser/include=user-root:add(name=root,type=USER)
+/core-service=management/access=authorization/role-mapping=Administrator:add(name=Administrator,type=ROLE)
+/core-service=management/access=authorization/role-mapping=Administrator/include=group-administration:add(name=administration,type=GROUP)
+/core-service=management/access=authorization/role-mapping=Deployer:add(name=Deployer,type=ROLE)
+/core-service=management/access=authorization/role-mapping=Deployer/include=group-deployment:add(name=deployment,type=GROUP)
+/core-service=management/access=authorization/role-mapping=Monitor:add(name=Monitor,type=ROLE)
+/core-service=management/access=authorization/role-mapping=Monitor/include=group-monitoring:add(name=monitoring,type=GROUP)
+/core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
+
+# Configure vault
+/core-service=vault:add(vault-options=[("KEYSTORE_URL" => "${jboss.server.config.dir}/keystore/vault.keystore"), ("KEYSTORE_PASSWORD" => "${vault.mask.passwd}"), ("KEYSTORE_ALIAS" => "vault"), ("SALT" => "${vault.salt}"), ("ITERATION_COUNT" => "${vault.iter.count}"), ("ENC_FILE_DIR" => "${jboss.server.config.dir}/vault/")]
+
+# Set globale modules
+/subsystem=ee/:write-attribute(name=global-modules,value=[{"name" => "org.jboss.xnio", "slot" => "main"}, {"name" => "org.jboss.remoting-jmx", "slot" => "main"}]
+
+# Define a datasource (example)
+/subsystem=datasources/data-source=ExampleByCliDS/:add(driver-name="h2", connection-url="${ExampleByCliDS.url}", jndi-name="java:jboss/jdbc/ExampleByCliDS", user-name="${ExampleByCliDS.user}", password="${ExampleByCliDS.password}", use-ccm="false", max-pool-size="25" )
+# data-source add --name=ExampleByCliDS --driver-name=h2 --connection-url=${ExampleByCliDS.url} --jndi-name=java:jboss/jdbc/ExampleByCliDS --user-name=${ExampleByCliDS.user} --password=${ExampleByCliDS.password} --use-ccm=false --max-pool-size=25 --blocking-timeout-wait-millis=5000 \
+	data-source enable --name=ExampleByCliDS 
+
+# Define JMS remote connection
+# step 1 define outbound-sockets
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-jms-mgmt-node_XX/:add(host="${jms.remote.binding.host.1}", port="${jms.remote.binding.port.1}")
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-jms-mgmt-node_YY/:add(host="${jms.remote.binding.host.2}", port="${jms.remote.binding.port.2}")
+
+# step 2 define connectors
+/subsystem=messaging/hornetq-server=default/remote-connector=remote-jms-mgmt-node_XX/:add(socket-binding="${jms.remote.binding.name.1}")
+/subsystem=messaging/hornetq-server=default/remote-connector=remote-jms-mgmt-node_YY/:add(socket-binding="${jms.remote.binding.name.2}")
+
+# step 3 define pooled connetion-factory
+/subsystem=messaging/hornetq-server=default/pooled-connection-factory=hornetq-ra-node_XY/:add(connector={"${jms.remote.connector.name.1}" => "connector", "${jms.remote.connector.name.2}" => "connector"}, entries=["${jms.pooled.connection-factory.jndi}"], transaction="xa", consumer-window-size="2097152", reconnect-attempts="-1")
+
+# End of defining JMS remote connection
+
+# Defining a local queue
+/subsystem=messaging/hornetq-server=default/jms-queue=org.app.minibank.minibankref1.jms.QueueZ/:add(entries=["${jms.queue.jndi.local.1}","${jms.queue.jndi.exported.1}"])
+
+# Change Logging
+# Define a Logger
+/subsystem=logging/logger=org.app.minibank/:add(level="DEBUG")
+
+
+# Change the level for a Logger
+/subsystem=logging/logger=org.app.minibank/:write-attribute(name="level", value="WARN")
+
+# Add LODH security domain
+/subsystem=security/security-domain=LOSSPI-RemotingDomain/:add(cache-type=default)
+/subsystem=security/security-domain=LOSSPI-RemotingDomain/authentication=classic:add(login-modules=[{"code"=>"Simple", "flag"=>"optional"},{"code"=>"com.lodh.security.losspi.LOSSPILoginModule", "flag"=>"optional", , "module"=>"losspi", "module-options"=>["unauthenticatedIdentity"=>"anonymous", "validationURL"=>"${security.losspi.url.validation}", "enableBasicAuthnProxy"=>"${security.losspi.enable.basic.authn.proxy}", "basicAuthnURL"=>"${security.losspi.url.basic.authn}", "basicAuthnUsernamePrefix"=>"${security.losspi.basic.authn.username.prefix:}", "enableOblixCookieAuthn"=>"${security.losspi.enable.oblix.authn}", "oblixAuthnURL"=>"${security.losspi.url.oblix.authn}", "password-stacking"=>"useFirstPass", "basicAuthnProxyMode"=>"${security.losspi.basic.authn.mode}"]},{"code"=>"com.lodh.security.losspi.LOSSPIRolesLoginModule", "flag"=>"optional", , "module"=>"losspi", "module-options"=>["lodhRolesProperties"=>"${env.CURRENT_SERVER_DIR}lodhdeploy/lodh-roles.properties", "password-stacking"=>"useFirstPass"]}])
+
+# Add LODH security realm
+/core-service=management/security-realm=LODH-Realm/:add
+/core-service=management/security-realm=LODH-Realm/authentication=jaas/:add(name="LOSSPI-RemotingDomain")
+
+run-batch
+
+# Finally reload configuration and leave the admin mode
+reload --admin-only=false
+
+
+
