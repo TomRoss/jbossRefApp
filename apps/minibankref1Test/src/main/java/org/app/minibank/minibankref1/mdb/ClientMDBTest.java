@@ -48,14 +48,14 @@ public class ClientMDBTest {
 
     @Test
     public void sendReceiveMessagesWithLocalQueues() throws Exception {
-        sendReceiveMessages(new CallJMSAction1(), ctx1, "org/app/minibank/minibankref1/jms/QueueA", "org/app/minibank/minibankref1/jms/QueueB", 10, 1);
+        sendReceiveMessages(new CallJMSAction1(), ctx1, "org/app/minibank/minibankref1/jms/QueueA", "org/app/minibank/minibankref1/jms/QueueB", 1, 1);
     }
 
     @Test
     public void sendReceiveMessagesWithLocalQueuesError() throws Exception {
         CallJMSAction1 callJMSAction1 = new CallJMSAction1();
         callJMSAction1.setThrowCheckedException(true);
-        sendReceiveMessages(callJMSAction1, ctx1, "org/app/minibank/minibankref1/jms/QueueA", "org/app/minibank/minibankref1/jms/QueueB", 1, 1);
+        sendReceiveMessages(callJMSAction1, ctx1, "org/app/minibank/minibankref1/jms/QueueA", "org/app/minibank/minibankref1/jms/QueueAError", 1, 1);
     }
 
     @Test
