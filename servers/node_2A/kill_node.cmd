@@ -1,0 +1,11 @@
+@ECHO OFF
+SETLOCAL
+SET SET_ENV_ONLY=true
+CALL start_node.cmd
+
+SET CMDLINE=taskkill /F /IM %JVM_NAME%
+
+ECHO %CMDLINE%
+call %CMDLINE%
+
+ENDLOCAL

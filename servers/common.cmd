@@ -4,6 +4,18 @@ IF "%JAVA_HOME%"=="" ECHO ERROR: JAVA_HOME must be set. You can set it in ../../
 IF "%EAP_HOME%"=="" ECHO ERROR: EAP_HOME must be set. You can set it in ../../customize/customize.cmd
 SET JBOSS_HOME=%EAP_HOME%
 
+set JVM_NAME=JBRA_%JBOSS_SERVER_NAME%.exe
+REM rename/copy java.exe in JBRA_node_1A.exe
+REM to make it works you will need to change script "%EAP_HOME%\bin\standalone.bat" around line 110 to add the JVM_NAME variable
+if not exist "%JAVA_HOME%\bin\%JVM_NAME%" (
+	ECHO Renaming file "%JAVA_HOME%\bin\java.exe" to "%JAVA_HOME%\bin\%JVM_NAME%"
+	copy /V /Y /B "%JAVA_HOME%\bin\java.exe" "%JAVA_HOME%\bin\%JVM_NAME%"
+)
+
+REM When not running through a windows service we don't want to be paused when jboss is ending
+REM but see later the NOPAUSE var is also use to determine if we are running through a windows service
+IF "%SERVICE_NAME%"=="" set NOPAUSE=true
+
 SET PATH=%JAVA_HOME%\bin;%EAP_HOME%\bin;%PATH%
 IF EXIST customize.cmd CALL customize.cmd
 
