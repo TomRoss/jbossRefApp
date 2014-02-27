@@ -30,7 +30,10 @@ public class MdbFoo1 implements MessageListener {
      * Mapped name is set to JNDI name to enable the injection we expect
      */
     @Resource(mappedName = "java:/JmsXA")
-    private ConnectionFactory connectionFactory;
+    private ConnectionFactory connectionFactoryNode1;
+
+    @Resource(mappedName = "java:/JmsXA/node_2")
+    private ConnectionFactory connectionFactoryNode2;
 
     @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueB")
     private Queue queueb;
@@ -48,7 +51,7 @@ public class MdbFoo1 implements MessageListener {
             ObjectMapper mapper = new ObjectMapper();
             IAction1 action = mapper.readValue(inText, actionClass);
 
-            CallContext1 callContext1 = new CallContext1(this, ctx, "onMessage", connectionFactory, queueb);
+            CallContext1 callContext1 = new CallContext1(this, ctx, "onMessage", connectionFactoryNode1, connectionFactoryNode2, queueb, message);
             action.doIt(callContext1);
 
         } catch (Exception e) {

@@ -29,9 +29,9 @@ public class ClientJmxRolesTest {
 
     private static final Logger log = Logger.getLogger(ClientJmxRolesTest.class);
 
-    private static final String ADMINISTRATOR_PASSWORD = "Passw0rd";
+    public static final String ADMINISTRATOR_PASSWORD = "Passw0rd";
 
-    private static final String ADMINISTRATOR_USER = "admin";
+    public static final String ADMINISTRATOR_USER = "admin";
 
     private static final String SUPERUSER_PASSWORD = "Passw0rd!";
 
@@ -41,7 +41,7 @@ public class ClientJmxRolesTest {
 
     private static final String MONITORING_USER = "monitoring";
 
-    private static final String JMX_REMOTING_URL = TestUtil.getJmxUrl1A();
+    private static final String JMX_REMOTING_URL = TestUtil.node1A.getUrlJmx();
 
     public static final String UNAUTHORIZED = "Unauthorized access";
 

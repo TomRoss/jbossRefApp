@@ -7,6 +7,7 @@ import javax.ejb.MessageDrivenContext;
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.Queue;
 import javax.jms.TextMessage;
 
 import org.apache.log4j.Logger;
@@ -39,11 +40,14 @@ public class MdbBar1 implements MessageListener {
      * The pooled connection factory configured in the server configuration. 
      * Mapped name is set to JNDI name to enable the injection we expect
      */
-    @Resource(mappedName = "java:/JmsXA/node_2")
-    private ConnectionFactory connectionFactory;
+    @Resource(mappedName = "java:/JmsXA")
+    private ConnectionFactory connectionFactoryNode1;
 
-    // @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueD")
-    // private Queue queueD;
+    @Resource(mappedName = "java:/JmsXA/node_2")
+    private ConnectionFactory connectionFactoryNode2;
+
+    @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueB")
+    private Queue queueB;
 
     public void onMessage(Message message) {
         if (!(message instanceof TextMessage)) {
@@ -58,7 +62,7 @@ public class MdbBar1 implements MessageListener {
             ObjectMapper mapper = new ObjectMapper();
             IAction1 action = mapper.readValue(inText, actionClass);
 
-            CallContext1 callContext1 = new CallContext1(this, ctx, "onMessage", connectionFactory, null);
+            CallContext1 callContext1 = new CallContext1(this, ctx, "onMessage", connectionFactoryNode1, connectionFactoryNode2, queueB, message);
             action.doIt(callContext1);
 
         } catch (Exception e) {

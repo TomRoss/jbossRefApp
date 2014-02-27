@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import javax.ejb.EJBContext;
 import javax.jms.ConnectionFactory;
+import javax.jms.Message;
 import javax.jms.Queue;
 import javax.naming.InitialContext;
 import javax.transaction.Status;
@@ -31,9 +32,13 @@ public class CallContext1 {
 
     String method;
 
-    private ConnectionFactory connectionFactory;
+    private ConnectionFactory connectionFactoryLocal;
+
+    private ConnectionFactory connectionFactoryRemote;
 
     private Queue localQueue;
+
+    private Message message;
 
     static {
         try {
@@ -43,11 +48,12 @@ public class CallContext1 {
         }
     }
 
-    public CallContext1(Object receiver, EJBContext ejbContext, String method, Bar1Local bar1) {
+    public CallContext1(Object receiver, EJBContext ejbContext, String method, Bar1Local bar1, Message message) {
         this.receiver = receiver;
         this.setEjbContext(ejbContext);
         this.method = method;
         this.bar1 = bar1;
+        this.message = message;
         result.put("name", receiver.getClass().getSimpleName());
         result.put("method", method);
         result.put("node", System.getProperty("jboss.node.name"));
@@ -55,9 +61,22 @@ public class CallContext1 {
         result.put("user", ejbContext.getCallerPrincipal().getName());
     }
 
-    public CallContext1(Object receiver, EJBContext ejbContext, String method, ConnectionFactory cf, Queue q) {
+    public CallContext1(Object receiver, EJBContext ejbContext, String method, Bar1Local bar1) {
+        this(receiver, ejbContext, method, bar1, null);
+
+    }
+
+    public CallContext1(Object receiver, EJBContext ejbContext, String method, ConnectionFactory localCF, ConnectionFactory remoteCF, Queue q, Message message) {
+        this(receiver, ejbContext, method, null, message);
+        this.connectionFactoryLocal = localCF;
+        this.connectionFactoryRemote = remoteCF;
+        this.localQueue = q;
+    }
+
+    public CallContext1(Object receiver, EJBContext ejbContext, String method, ConnectionFactory localCF, ConnectionFactory remoteCF, Queue q) {
         this(receiver, ejbContext, method, null);
-        this.connectionFactory = cf;
+        this.connectionFactoryLocal = localCF;
+        this.connectionFactoryRemote = remoteCF;
         this.localQueue = q;
     }
 
@@ -114,12 +133,20 @@ public class CallContext1 {
         this.ejbContext = ejbContext;
     }
 
-    public ConnectionFactory getConnectionFactory() {
-        return connectionFactory;
+    public ConnectionFactory getConnectionFactoryLocal() {
+        return connectionFactoryLocal;
     }
 
-    public void setConnectionFactory(ConnectionFactory connectionFactory) {
-        this.connectionFactory = connectionFactory;
+    public void setConnectionFactoryLocal(ConnectionFactory connectionFactoryLocal) {
+        this.connectionFactoryLocal = connectionFactoryLocal;
+    }
+
+    public ConnectionFactory getConnectionFactoryRemote() {
+        return connectionFactoryRemote;
+    }
+
+    public void setConnectionFactoryRemote(ConnectionFactory connectionFactoryRemote) {
+        this.connectionFactoryRemote = connectionFactoryRemote;
     }
 
     public Queue getLocalQueue() {
@@ -128,6 +155,14 @@ public class CallContext1 {
 
     public void setLocalQueue(Queue localQueue) {
         this.localQueue = localQueue;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
     }
 
 }

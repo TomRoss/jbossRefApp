@@ -9,6 +9,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.AccountException;
@@ -34,27 +36,26 @@ public class CallJMSAction1 extends BaseAction1 {
         Connection connection = null;
         MessageProducer messageProducer = null;
         try {
-            ConnectionFactory connectionFactory = cc.getConnectionFactory();
+            ConnectionFactory connectionFactory = sendToLocalQueue ? cc.getConnectionFactoryLocal() : cc.getConnectionFactoryRemote();
             connection = connectionFactory.createConnection();
             Session session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-            Queue queueD = null;
+            Queue sentQueue = null;
             if (sendToLocalQueue) {
-                queueD = cc.getLocalQueue();
+                sentQueue = cc.getLocalQueue();
             } else {
-                // we can't inject a destination, because the remote queue are <b>not</b> avialable in the local JNDI.
-                // the only chance we have is to create the producer from the session.
-                // So we cannot use the JNDI name like:
-                // InitialContext context = new InitialContext(remoteLookupProperties);
-                // queueD = (Queue) context.lookup("org/app/minibank/minibankref1/jms/QueueD");
-
+                // to make this working you need to add in the globa-modules deps:
+                // <module name="org.jboss.remote-naming" slot="main"/>
+                // <module name="org.hornetq" slot="main"/>
                 // otherwise we get: javax.naming.NamingException: JBAS011843: Failed instantiate InitialContextFactory
                 // org.jboss.naming.remote.client.InitialContextFactory from classloader ModuleClassLoader for Module
                 // "deployment.minibankref1-3.0.0-SNAPSHOT.ear.minibankref1Services-3.0.0-SNAPSHOT.jar:main" from Service Module Loader
+                InitialContext context = new InitialContext(remoteLookupProperties);
+                sentQueue = (Queue) context.lookup("org/app/minibank/minibankref1/jms/QueueD");
 
-                // so we have to use:
-                queueD = (Queue) session.createQueue("org.app.minibank.minibankref1.jms.QueueD");
+                // another solution that works:
+                // sentQueue = (Queue) session.createQueue("org.app.minibank.minibankref1.jms.QueueD");
             }
-            messageProducer = session.createProducer(queueD);
+            messageProducer = session.createProducer(sentQueue);
             connection.start();
             TextMessage messageOut = session.createTextMessage();
 
@@ -63,12 +64,15 @@ public class CallJMSAction1 extends BaseAction1 {
             String resultJson = mapper.writeValueAsString(result);
 
             messageOut.setText(resultJson);
+            messageOut.setJMSCorrelationID(cc.getMessage().getJMSCorrelationID());
             messageProducer.send(messageOut);
 
         } catch (JMSException e) {
             throw new RuntimeException("Error when sending JMS message processing: " + e, e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error when Processing JSon message: " + e, e);
+        } catch (NamingException e) {
+            throw new RuntimeException("Error when sending JMS message processing: " + e, e);
         } finally {
             try {
                 if (connection != null) connection.close();

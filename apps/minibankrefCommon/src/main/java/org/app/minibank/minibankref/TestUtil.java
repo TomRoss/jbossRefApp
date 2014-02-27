@@ -23,6 +23,38 @@ public class TestUtil {
 
     public static final String passapp3 = "Passw0rd!";
 
+    public static final String PATH_SEPARATOR = System.getProperty("file.separator");
+
+    public static final String NODE_BASE_PATH = ".." + PATH_SEPARATOR + ".." + PATH_SEPARATOR + "servers";
+
+    public static final String SCRIPT_START = isWindows() ? "start_node.cmd" : "start_node.sh";
+
+    public static final String SCRIPT_SHUTDOWN = isWindows() ? "stop_node.cmd" : "stop_node.sh";
+
+    public static final String SCRIPT_KILL = isWindows() ? "kill_node.cmd" : "kill_node.sh";
+
+    public static final JBNode node1A = new JBNode("node_1A", "localhost", "100", "org/app/minibank/minibankref1/jms/QueueA",
+            "org/app/minibank/minibankref1/jms/QueueB");
+
+    public static final JBNode node1B = new JBNode("node_1B", "localhost", "200", "org/app/minibank/minibankref1/jms/QueueA",
+            "org/app/minibank/minibankref1/jms/QueueB");
+
+    public static final JBNode node2A = new JBNode("node_2A", "localhost", "300", "org/app/minibank/minibankref1/jms/QueueC",
+            "org/app/minibank/minibankref1/jms/QueueD");
+
+    public static final JBNode node2B = new JBNode("node_2B", "localhost", "400", "org/app/minibank/minibankref1/jms/QueueC",
+            "org/app/minibank/minibankref1/jms/QueueD");
+
+    public static final JBNode node3A = new JBNode("node_3A", "localhost", "500", "", "");
+
+    public static final JBNode node3B = new JBNode("node_3B", "localhost", "600", "", "");
+
+    public static boolean isWindows() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        return osName.contains("windows");
+
+    }
+
     public static String getJndi1() {
         return "minibankref1/minibankref1Services/Foo1Bean!org.app.minibank.minibankref1.ejb.session.Foo1Remote";
     }
@@ -51,10 +83,6 @@ public class TestUtil {
         return createProperties1(userguest, passguest);
     }
 
-    public static Properties createProperties1(String user, String pass) {
-        return createProperties("5101", "5201", "ejb", user, pass);
-    }
-
     public static Properties createProperties2() {
         return createProperties2(userguest, passguest);
     }
@@ -63,12 +91,16 @@ public class TestUtil {
         return createProperties3(userguest, passguest);
     }
 
+    public static Properties createProperties1(String user, String pass) {
+        return createProperties(node1A.getPortEjb(), node1B.getPortEjb(), "ejb", user, pass);
+    }
+
     public static Properties createProperties2(String user, String pass) {
-        return createProperties("5301", "5401", "ejb34", user, pass);
+        return createProperties(node2A.getPortEjb(), node2B.getPortEjb(), "ejb34", user, pass);
     }
 
     public static Properties createProperties3(String user, String pass) {
-        return createProperties("5501", "5601", "ejb56", user, pass);
+        return createProperties(node3A.getPortEjb(), node3B.getPortEjb(), "ejb56", user, pass);
     }
 
     public static Properties createProperties(String portNode1, String portNode2, String ejbClusterName, String user, String pass) {
@@ -121,27 +153,13 @@ public class TestUtil {
         return properties;
     }
 
-    public static Properties createJmsProperties1() {
-        return createProperties("5101", "5201", null, userguest, passguest, false);
+    public static Properties createJmsProperties(JBNode[] nodesIn) {
+        JBNode firstMember = null;
+        JBNode secondMember = null;
+        if (nodesIn.length > 0) firstMember = nodesIn[0];
+        if (nodesIn.length > 1) secondMember = nodesIn[1];
+        else secondMember = nodesIn[0];
+        return createProperties(firstMember.getPortEjb(), secondMember.getPortEjb(), null, userguest, passguest, false);
     }
 
-    public static Properties createJmsProperties2() {
-        return createProperties("5301", "5401", null, userguest, passguest, false);
-    }
-
-    public static String getJmxUrl1A() {
-        return "service:jmx:remoting-jmx://localhost:5104";
-    }
-
-    public static String getJmxUrl1B() {
-        return "service:jmx:remoting-jmx://localhost:5204";
-    }
-
-    public static String getJmxUrl2A() {
-        return "service:jmx:remoting-jmx://localhost:5304";
-    }
-
-    public static String getJmxUrl2B() {
-        return "service:jmx:remoting-jmx://localhost:5404";
-    }
 }

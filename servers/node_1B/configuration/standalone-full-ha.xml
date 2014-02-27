@@ -165,8 +165,8 @@
             <global-modules>
                 <module name="org.jboss.xnio" slot="main"/>
                 <module name="org.jboss.remoting-jmx" slot="main"/>
-                <module name="org.jboss.remote-naming" slot="main"/> <!-- to be able to do a remote lookup -->
-                <module name="org.hornetq" slot="main"/> <!-- to be able to lookup a remote queue -->
+                <module name="org.jboss.remote-naming" slot="main"/>
+                <module name="org.hornetq" slot="main"/>
             </global-modules>
             <spec-descriptor-property-replacement>true</spec-descriptor-property-replacement>
             <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>
@@ -430,6 +430,8 @@
                     </address-setting>
                     <address-setting match="jms.queue.org.app.minibank.minibankref1.jms.QueueA">
                         <dead-letter-address>jms.queue.org.app.minibank.minibankref1.jms.QueueAError</dead-letter-address>
+                        <redelivery-delay>60000</redelivery-delay>
+                        <max-delivery-attempts>3</max-delivery-attempts>
                     </address-setting>
                     <address-setting match="jms.queue.org.app.minibank.minibankref1.jms.QueueB">
                         <dead-letter-address>jms.queue.org.app.minibank.minibankref1.jms.QueueBError</dead-letter-address>
@@ -494,6 +496,9 @@
                 </jms-connection-factories>
 
                 <jms-destinations>
+                    <jms-queue name="DLQ">
+                        <entry name="org/app/minibank/jms/DefaultDLQ"/>
+                    </jms-queue>
                     <jms-queue name="org.app.minibank.minibankref1.jms.QueueA">
                         <entry name="org/app/minibank/minibankref1/jms/QueueA"/>
                         <entry name="java:jboss/exported/org/app/minibank/minibankref1/jms/QueueA"/>
@@ -555,7 +560,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.4">
-            <core-environment>
+            <core-environment node-identifier="${jboss.node.name}">
                 <process-id>
                     <uuid/>
                 </process-id>

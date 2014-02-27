@@ -6,6 +6,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.AccountException;
+import org.app.minibank.minibankref.JBNode;
 import org.app.minibank.minibankref.TestUtil;
 
 public class Case01043891Action extends BaseAction1 {
@@ -17,7 +18,9 @@ public class Case01043891Action extends BaseAction1 {
     @Override
     public Object doIt(CallContext1 cc) throws AccountException {
         try {
-            InitialContext context = new InitialContext(TestUtil.createJmsProperties2());
+
+            JBNode[] nodes2 = { TestUtil.node2A, TestUtil.node2B };
+            InitialContext context = new InitialContext(TestUtil.createJmsProperties(nodes2));
             try {
                 Queue queue = (Queue) context.lookup("org/app/minibank/minibankref1/jms/QueueC");
                 log.info("found " + queue);

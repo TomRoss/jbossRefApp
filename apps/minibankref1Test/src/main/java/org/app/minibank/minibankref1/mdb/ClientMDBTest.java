@@ -17,6 +17,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.EAP6NamingContext;
+import org.app.minibank.minibankref.JBNode;
 import org.app.minibank.minibankref.TestUtil;
 import org.app.minibank.minibankref1.action.CallJMSAction1;
 import org.junit.After;
@@ -34,10 +35,14 @@ public class ClientMDBTest {
 
     EAP6NamingContext ctx2;
 
+    JBNode[] nodes1 = { TestUtil.node2A, TestUtil.node2B };
+
+    JBNode[] nodes2 = { TestUtil.node2A, TestUtil.node2B };
+
     @Before
     public void before() throws NamingException {
-        ctx1 = new EAP6NamingContext(TestUtil.createJmsProperties1());
-        ctx2 = new EAP6NamingContext(TestUtil.createJmsProperties2());
+        ctx1 = new EAP6NamingContext(TestUtil.createJmsProperties(nodes1));
+        ctx2 = new EAP6NamingContext(TestUtil.createJmsProperties(nodes2));
     }
 
     @After
@@ -62,7 +67,7 @@ public class ClientMDBTest {
     public void sendReceiveMessagesWithRemoteQueues() throws Exception {
         CallJMSAction1 callJMSAction1 = new CallJMSAction1();
         callJMSAction1.setSendToLocalQueue(false);
-        callJMSAction1.setRemoteLookupProperties(TestUtil.createJmsProperties2());
+        callJMSAction1.setRemoteLookupProperties(TestUtil.createJmsProperties(nodes2));
         sendReceiveMessages(callJMSAction1, ctx2, "org/app/minibank/minibankref1/jms/QueueC", "org/app/minibank/minibankref1/jms/QueueD", 1, 1);
     }
 
