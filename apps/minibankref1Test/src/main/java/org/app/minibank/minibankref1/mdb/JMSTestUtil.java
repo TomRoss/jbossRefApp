@@ -303,40 +303,39 @@ public class JMSTestUtil {
     public static void runJMSTest(String testName, int nbLaunchTest, int nbMessageToSend, int displayMessagesEvery, JBNode[] nodes, JBNode[] nodesIn,
             JBNode[] nodesOut, CallJMSAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) throws Exception {
         for (int i = 0; i < nbLaunchTest; i++) {
-            String info = "[" + testName + " (loop=" + i + ")]";
-            log.info("===================> " + info + " Start running test " + i);
+            String info = testName + " (loop=" + i + ")";
+            log.info("===================> [" + info + "] Start running test " + i);
             // Prepare Nodes: clean dirs + start nodes + clean messages in queues + pause consuption of messages in queueIn
-            JMSTestUtil.prepareNodes(testName, getQeueIn(nodesIn), getQeueOut(nodesOut), nodes);
+            JMSTestUtil.prepareNodes(info, getQeueIn(nodesIn), getQeueOut(nodesOut), nodes);
 
             // send messages
-            JMSTestUtil.sendMessages(testName, action, nodesIn, getQeueIn(nodesIn), nbMessageToSend, displayMessagesEvery);
+            JMSTestUtil.sendMessages(info, action, nodesIn, getQeueIn(nodesIn), nbMessageToSend, displayMessagesEvery);
 
             // check all messages are in the queueIn
-            List<Map<String, String>> messagesQueueIn = JMSTestUtil.browseMessages(testName, getQeueIn(nodesIn), nodesIn);
+            List<Map<String, String>> messagesQueueIn = JMSTestUtil.browseMessages(info, getQeueIn(nodesIn), nodesIn);
             if (nbMessageToSend != messagesQueueIn.size())
-                throw new IllegalStateException(info + " bad number od messages: nbMessageToSend=" + nbMessageToSend + " messagesQueueIn="
+                throw new IllegalStateException("[" + info + "] bad number od messages: nbMessageToSend=" + nbMessageToSend + " messagesQueueIn="
                         + messagesQueueIn.size());
 
             // resume the consuption of queueIn
-            JMSTestUtil.invokeOP(testName, "resume", getQeueIn(nodesIn), nodesIn);
+            JMSTestUtil.invokeOP(info, "resume", getQeueIn(nodesIn), nodesIn);
 
             // wait for message processing on server side
             Thread.sleep(10000);
 
             // Kill or clean shutdown one node then restart it
-            JMSTestUtil.executeProcess(testName, opKillOrShutdown, nodeToKillOrShutdown);
+            JMSTestUtil.executeProcess(info, opKillOrShutdown, nodeToKillOrShutdown);
             Thread.sleep(20000);
-            JMSTestUtil.executeProcess(testName, TestUtil.SCRIPT_START, nodeToKillOrShutdown);
+            JMSTestUtil.executeProcess(info, TestUtil.SCRIPT_START, nodeToKillOrShutdown);
 
             // check all messages are in the queueOut
             Thread.sleep(60000);// wait for nodeToKillOrShutdown to be up and running + wait for recovery mecanism
-            Pair<Boolean, String> result = JMSTestUtil.checkAllMessagesDelivered(testName, nbMessageToSend, getQeueOut(nodesOut), 15, nodesOut);
+            Pair<Boolean, String> result = JMSTestUtil.checkAllMessagesDelivered(info, nbMessageToSend, getQeueOut(nodesOut), 15, nodesOut);
 
             // shutdown/Kill nodes to stop the test
-            JMSTestUtil.executeProcess(testName, TestUtil.SCRIPT_KILL, nodes);
-            if (!result.getKey())
-                throw new IllegalStateException("[" + testName + "] Missing or duplicate messages after " + i + " run(s): " + result.getValue());
-            log.info("===================> " + info + " End running test " + i);
+            JMSTestUtil.executeProcess(info, TestUtil.SCRIPT_KILL, nodes);
+            if (!result.getKey()) throw new IllegalStateException("[" + info + "] Missing or duplicate messages after " + i + " run(s): " + result.getValue());
+            log.info("===================> [" + info + "] End running test " + i);
         }
     }
 
