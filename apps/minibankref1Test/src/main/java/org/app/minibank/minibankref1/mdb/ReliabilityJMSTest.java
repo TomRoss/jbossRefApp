@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameters;
 @Parameters()
 public class ReliabilityJMSTest {
 
-    @Parameter(names = { "-tests", "-t" }, description = "space-separated list of tests to execute (could be empty or 1 2 3 4 ...) default (empty) will execute all tests", required = false)
+    @Parameter(names = { "-tests", "-t" }, description = "coma-separated list of tests to execute (could be empty or 1 2 3 4 ...) default (empty) will execute all tests", required = false)
     private List<Integer> tests = new ArrayList<Integer>();
 
     @Parameter(names = { "-loop", "-l" }, description = "loop execution time (default to 3)", required = false)

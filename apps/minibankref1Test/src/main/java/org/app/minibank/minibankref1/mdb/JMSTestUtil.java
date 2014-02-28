@@ -133,7 +133,8 @@ public class JMSTestUtil {
                 // msg.setIntProperty(TestUtil.JMS_HEADER_CALLID, action.getCallId());
                 msg.setJMSCorrelationID("" + action.getCallId());
                 msgProducer.send(msg);
-                if (i % displayMessagesEvery == 0) log.info("Message " + i + " sent with jmsMessageID=" + msg.getJMSMessageID() + " : " + jSonString);
+                if (i % displayMessagesEvery == 0)
+                    log.info("[" + testName + "] Message " + i + " sent with jmsMessageID=" + msg.getJMSMessageID() + " : " + jSonString);
             }
 
         } finally {
