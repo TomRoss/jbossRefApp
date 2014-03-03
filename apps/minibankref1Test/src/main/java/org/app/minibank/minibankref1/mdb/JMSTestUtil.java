@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -23,8 +24,6 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.EAP6NamingContext;
 import org.app.minibank.minibankref.JBNode;
@@ -34,32 +33,71 @@ import org.app.minibank.minibankref1.jmx.ClientJmxRolesTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JMSTestUtil {
+public final class JMSTestUtil {
 
     private static final Logger log = Logger.getLogger(JMSTestUtil.class);
 
-    public static void executeProcess(String testName, String command, JBNode... nodes) throws Exception {
-        for (JBNode node : nodes) {
-            String nodeScript = node.getPath() + TestUtil.PATH_SEPARATOR + command;
+    public static final String CR = System.getProperty("line.separator");
+
+    private final String testName;
+
+    private final int nbLaunchTest;
+
+    private final int nbMessageToSend;
+
+    private final int displayMsgEvery;
+
+    private final JBNode[] nodes;
+
+    private final JBNode[] nodesIn;
+
+    private final JBNode[] nodesOut;
+
+    private final CallJMSAction1 action;
+
+    private final String opKillOrShutdown;
+
+    private final JBNode nodeToKillOrShutdown;
+
+    private int currentLoop = 1;
+
+    public JMSTestUtil(String testName, int nbLaunchTest, int nbMessageToSend, int displayMsgEvery, JBNode[] nodes, JBNode[] nodesIn, JBNode[] nodesOut,
+            CallJMSAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) {
+        this.testName = testName;
+        this.nbLaunchTest = nbLaunchTest;
+        this.nbMessageToSend = nbMessageToSend;
+        this.displayMsgEvery = displayMsgEvery;
+        this.nodes = nodes;
+        this.nodesIn = nodesIn;
+        this.nodesOut = nodesOut;
+        this.action = action;
+        this.opKillOrShutdown = opKillOrShutdown;
+        this.nodeToKillOrShutdown = nodeToKillOrShutdown;
+
+    }
+
+    public void executeProcess(String commandToExec, JBNode... nodesToExecCmd) throws Exception {
+        for (JBNode node : nodesToExecCmd) {
+            String nodeScript = node.getPath() + TestUtil.PATH_SEPARATOR + commandToExec;
             File fileNode = new File(nodeScript);
             String line = "cmd /C " + fileNode.getName();
-            log.info("[" + testName + "] start launching '" + line + "'");
+            log.info(getMesageInfo() + " start launching '" + line + "'");
             CommandLine cmdLine = CommandLine.parse(line);
             DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
             DefaultExecutor executor = new DefaultExecutor();
             executor.setWorkingDirectory(fileNode.getParentFile());
             executor.execute(cmdLine, resultHandler);
             resultHandler.waitFor(5000);
-            log.info("[" + testName + "] end launching '" + line + "'");
+            log.info(getMesageInfo() + " end launching '" + line + "'");
         }
     }
 
-    public static void pingServer(String testName, JBNode... nodes) throws Exception {
-        for (JBNode node : nodes) {
+    public void pingServer(JBNode... nodesToPing) throws Exception {
+        for (JBNode node : nodesToPing) {
             int nbLoop = 0;
             int maxNbLoop = 10;
             for (int i = 0; i < maxNbLoop; i++) {
-                String state = (String) getServerAttribute(testName, "serverState", node);
+                String state = (String) getServerAttribute("serverState", node);
                 if ("running".equals(state)) break;
                 Thread.sleep(5000);
                 nbLoop++;
@@ -70,38 +108,37 @@ public class JMSTestUtil {
         }
     }
 
-    public static void cleanDirs(String testName, JBNode... nodes) throws Exception {
-        for (JBNode node : nodes) {
+    public void cleanDirs(JBNode... nodesToClean) throws Exception {
+        for (JBNode node : nodesToClean) {
             String dataDir = node.getPath() + TestUtil.PATH_SEPARATOR + "data";
             String logDir = node.getPath() + TestUtil.PATH_SEPARATOR + "log";
             String tmpDir = node.getPath() + TestUtil.PATH_SEPARATOR + "tmp";
-            log.info("[" + testName + "] Cleaning dirs: " + dataDir + ", " + logDir + ", " + tmpDir);
+            log.info(getMesageInfo() + " Cleaning dirs: " + dataDir + ", " + logDir + ", " + tmpDir);
             FileUtils.cleanDirectory(new File(dataDir));
             FileUtils.cleanDirectory(new File(logDir));
             FileUtils.cleanDirectory(new File(tmpDir));
         }
     }
 
-    public static void prepareNodes(String testName, String queueIn, String queueOut, JBNode... nodes) throws Exception {
+    public void prepareNodes() throws Exception {
         // Ensure nodes are down
-        executeProcess(testName, TestUtil.SCRIPT_KILL, nodes);
+        executeProcess(TestUtil.SCRIPT_KILL, nodes);
 
         // remove all files in data, log and tmp dirs
-        cleanDirs(testName, nodes);
+        cleanDirs(nodes);
 
         // start nodes
-        executeProcess(testName, TestUtil.SCRIPT_START, nodes);
-        pingServer(testName, nodes);
+        executeProcess(TestUtil.SCRIPT_START, nodes);
+        pingServer(nodes);
 
         // init test with no messages in Queues: not really necessary since we cleaned the data dir...
-        removeMessagesFromAllQueues(testName, queueIn, queueOut, nodes);
+        removeMessagesFromAllQueues();
 
         // pause consuption of messages in queueIn
-        invokeOP(testName, "pause", queueIn, nodes);
+        invokeOP("pause", getQeueIn(), nodes);
     }
 
-    public static void sendMessages(String testName, CallJMSAction1 action, JBNode[] nodesIn, String jndiQueue, int nbMessages, int displayMessagesEvery)
-            throws Exception {
+    public void sendMessages() throws Exception {
         Connection connection = null;
         Session session = null;
         MessageProducer msgProducer = null;
@@ -111,21 +148,21 @@ public class JMSTestUtil {
         for (JBNode jbNode : nodesIn) {
             nodesInStr += jbNode + " ";
         }
-        log.info("[" + testName + "] Start sending '" + nbMessages + "' messages to queue '" + jndiQueue + "' on " + nodesInStr);
+        log.info(getMesageInfo() + " Start sending '" + nbMessageToSend + "' messages to queue '" + getQeueIn() + "' on " + nodesInStr);
         try {
             Properties jmsLookupProps = TestUtil.createJmsProperties(nodesIn);
             ctx = new EAP6NamingContext(jmsLookupProps);
             ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
-            Destination destinationProducer = (Destination) ctx.lookup(jndiQueue);
+            Destination destinationProducer = (Destination) ctx.lookup(getQeueIn());
             connection = cf.createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             msgProducer = session.createProducer(destinationProducer);
             connection.start();
 
             ObjectMapper mapper = new ObjectMapper();
-            action.setDisplaylogEvery(displayMessagesEvery);
+            action.setDisplaylogEvery(displayMsgEvery);
 
-            for (int i = 0; i < nbMessages; i++) {
+            for (int i = 0; i < nbMessageToSend; i++) {
                 action.setCallId(i);
                 String jSonString = mapper.writeValueAsString(action);
                 TextMessage msg = session.createTextMessage(jSonString);
@@ -133,8 +170,8 @@ public class JMSTestUtil {
                 // msg.setIntProperty(TestUtil.JMS_HEADER_CALLID, action.getCallId());
                 msg.setJMSCorrelationID("" + action.getCallId());
                 msgProducer.send(msg);
-                if (i % displayMessagesEvery == 0)
-                    log.info("[" + testName + "] Message " + i + " sent with jmsMessageID=" + msg.getJMSMessageID() + " : " + jSonString);
+                if (i % displayMsgEvery == 0)
+                    log.info(getMesageInfo() + " Message " + i + " sent with jmsMessageID=" + msg.getJMSMessageID() + " : " + jSonString);
             }
 
         } finally {
@@ -145,13 +182,14 @@ public class JMSTestUtil {
 
         }
         long end = System.currentTimeMillis();
-        log.info("[" + testName + "] End sending '" + nbMessages + "' messages to queue '" + jndiQueue + "' in " + (end - start) + " ms on " + nodesInStr);
+        log.info(getMesageInfo() + " End sending '" + nbMessageToSend + "' messages to queue '" + getQeueIn() + "' in " + (end - start) + " ms on "
+                + nodesInStr);
 
     }
 
-    public static Object invokeOP(String testName, String operation, String queueName, JBNode... nodes) throws Exception {
+    public Object invokeOP(String operation, String queueName, JBNode... nodesToInvokeOP) throws Exception {
         Object result = null;
-        for (JBNode node : nodes) {
+        for (JBNode node : nodesToInvokeOP) {
             long start = System.currentTimeMillis();
             JMXConnector jmxc = null;
             try {
@@ -174,12 +212,12 @@ public class JMSTestUtil {
             }
 
             long end = System.currentTimeMillis();
-            log.info("[" + testName + "] invoke '" + operation + "' on queue '" + queueName + "' and node '" + node + "' in " + (end - start) + " ms");
+            log.info(getMesageInfo() + " invoke '" + operation + "' on queue '" + queueName + "' and node '" + node + "' in " + (end - start) + " ms");
         }
         return result;
     }
 
-    public static Object getServerAttribute(String testName, String attribut, JBNode node) throws Exception {
+    public Object getServerAttribute(String attribut, JBNode node) throws Exception {
         long start = System.currentTimeMillis();
         Object result = null;
         JMXConnector jmxc = null;
@@ -201,34 +239,34 @@ public class JMSTestUtil {
         }
 
         long end = System.currentTimeMillis();
-        log.info("[" + testName + "] getAttribut '" + attribut + "'='" + result + "' in " + (end - start) + " ms");
+        log.info(getMesageInfo() + " getAttribut '" + attribut + "'='" + result + "' in " + (end - start) + " ms");
         return result;
     }
 
     @SuppressWarnings("unchecked")
-    public static List<Map<String, String>> browseMessages(String testName, String queueName, JBNode... nodes) throws Exception {
+    public List<Map<String, String>> browseMessages(String queueNameToInspect, JBNode... nodesToBrowse) throws Exception {
         List<Map<String, String>> jsonReadValue = new ArrayList<Map<String, String>>();
         StringBuilder nodesStr = new StringBuilder();
-        for (JBNode node : nodes) {
+        for (JBNode node : nodesToBrowse) {
             nodesStr.append(node).append(' ');
-            String result = (String) invokeOP(testName, "listMessagesAsJson", queueName, node);
+            String result = (String) invokeOP("listMessagesAsJson", queueNameToInspect, node);
             ObjectMapper mapper = new ObjectMapper();
             jsonReadValue.addAll(mapper.readValue(result, List.class));
         }
-        log.debug("[" + testName + "] jsonReadValue=" + jsonReadValue);
-        log.info("[" + testName + "] Found '" + jsonReadValue.size() + "' messages in '" + queueName + "' on nodes: " + nodesStr);
+        log.debug(getMesageInfo() + " jsonReadValue=" + jsonReadValue);
+        log.info(getMesageInfo() + " Found '" + jsonReadValue.size() + "' messages in '" + queueNameToInspect + "' on nodes: " + nodesStr);
         return jsonReadValue;
     }
 
-    public static void removeMessagesFromAllQueues(String testName, String queueIn, String queueOut, JBNode... nodes) throws Exception {
-        invokeOP(testName, "removeMessages", queueIn, nodes);
-        invokeOP(testName, "removeMessages", queueIn + "Error", nodes);
+    public void removeMessagesFromAllQueues() throws Exception {
+        invokeOP("removeMessages", getQeueIn(), nodes);
+        invokeOP("removeMessages", getQeueIn() + "Error", nodes);
 
-        invokeOP(testName, "removeMessages", queueOut, nodes);
-        invokeOP(testName, "removeMessages", queueOut + "Error", nodes);
+        invokeOP("removeMessages", getQeueOut(), nodes);
+        invokeOP("removeMessages", getQeueOut() + "Error", nodes);
     }
 
-    public static Pair<Boolean, String> checkAllMessagesDelivered(String testName, List<Map<String, String>> messagesQueueOut, int nbmessageToSend) {
+    public JMSResult checkMessagesDelivered(List<Map<String, String>> messagesQueueOut, int loopNumber, int retryNumber) {
         List<Integer> elements = new ArrayList<Integer>(messagesQueueOut.size());
         int nbMissingElements = 0;
         int nbDuplicateElements = 0;
@@ -254,89 +292,117 @@ public class JMSTestUtil {
             }
             i++;
         }
-        for (int j = i; j < nbmessageToSend; j++) {
-            missingStr.append(i).append(',');
+        for (int j = i; j < nbMessageToSend; j++) {
+            missingStr.append(j).append(',');
             nbMissingElements++;
         }
 
-        String msgInfo = "[" + testName + "] nbMissingElements=" + nbMissingElements + " nbDuplicateElements=" + nbDuplicateElements;
+        String infoNumbers = "nbMissingElements=" + nbMissingElements + " nbDuplicateElements=" + nbDuplicateElements;
+        String msgInfo = getMesageInfo() + " " + infoNumbers;
         if (nbMissingElements > 0 || nbDuplicateElements > 0) {
-            log.warn("[" + testName + "] List of missing elements: " + missingStr.toString());
-            log.warn("[" + testName + "] List of duplicate elements: " + duplicateStr.toString());
+            log.warn(getMesageInfo() + " List of missing elements: " + missingStr.toString());
+            log.warn(getMesageInfo() + " List of duplicate elements: " + duplicateStr.toString());
             log.warn(msgInfo);
         } else {
             log.info(msgInfo);
         }
-        Pair<Boolean, String> result = new ImmutablePair<Boolean, String>(nbMissingElements + nbDuplicateElements == 0, msgInfo);
+        JMSResult result = new JMSResult(testName, loopNumber, retryNumber, (nbMissingElements + nbDuplicateElements == 0), infoNumbers);
         return result;
     }
 
-    public static Pair<Boolean, String> checkAllMessagesDelivered(String testName, int nbMessagesExpected, String queueOut, int maxRetry, JBNode... nodes)
-            throws Exception {
+    public JMSAllResults checkAllMessagesDelivered(String queueNameToInspect, int maxRetry, int loopNumber, JBNode... nodesToBrowse) throws Exception {
         // check all messages are in the queueOut
-        Pair<Boolean, String> result = new ImmutablePair<Boolean, String>(false, "init");
+        JMSAllResults results = new JMSAllResults(testName, currentLoop);
         int retry = 1;
-        while (!result.getKey()) {
+        while (!results.isAllDelivered()) {
             if (retry > maxRetry) {
-                log.warn("[" + testName + "] stop browsing queues after " + (retry - 1) + " retry.");
+                log.warn(getMesageInfo() + " stop browsing queues after " + (retry - 1) + " retry.");
                 break;
             }
-            log.info("[" + testName + "] Retry number " + retry);
-            List<Map<String, String>> messagesQueueOut = JMSTestUtil.browseMessages(testName, queueOut, nodes);
-            result = JMSTestUtil.checkAllMessagesDelivered(testName, messagesQueueOut, nbMessagesExpected);
+            log.info(getMesageInfo() + " Retry number " + retry);
+            List<Map<String, String>> messagesQueueOut = browseMessages(queueNameToInspect, nodesToBrowse);
+            JMSResult resTempo = checkMessagesDelivered(messagesQueueOut, loopNumber, retry);
+            results.add(resTempo);
             retry++;
-            Thread.sleep(60000);
+            if (!resTempo.isAllDelivered()) Thread.sleep(60000);
         }
-        return result;
+        return results;
     }
 
-    public static String getQeueIn(JBNode[] nodes) {
+    public String getQeueIn() {
         // use only the first one because it is a cluster
-        return nodes[0].getQueueIn();
+        return nodesIn[0].getQueueIn();
     }
 
-    public static String getQeueOut(JBNode[] nodes) {
+    public String getQeueOut() {
         // use only the first one because it is a cluster
-        return nodes[0].getQueueOut();
+        return nodesOut[0].getQueueOut();
     }
 
-    public static void runJMSTest(String testName, int nbLaunchTest, int nbMessageToSend, int displayMessagesEvery, JBNode[] nodes, JBNode[] nodesIn,
-            JBNode[] nodesOut, CallJMSAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) throws Exception {
-        for (int i = 0; i < nbLaunchTest; i++) {
-            String info = testName + " (loop=" + i + ")";
-            log.info("===================> [" + info + "] Start running test " + i);
+    private String getMesageInfo() {
+        String info = "[" + testName + " (loop=" + currentLoop + ")]";
+        return info;
+    }
+
+    public void runJMSTest() throws Exception {
+        log.info("******************** Start running " + testName + " test");
+        long startTime = System.currentTimeMillis();
+        LinkedList<JMSAllResults> allResults = new LinkedList<JMSAllResults>();
+        for (currentLoop = 1; currentLoop <= nbLaunchTest; currentLoop++) {
+            long startTimeLoop = System.currentTimeMillis();
+            String info = getMesageInfo();
+            log.info("===================> " + info + " Start running test " + currentLoop);
             // Prepare Nodes: clean dirs + start nodes + clean messages in queues + pause consuption of messages in queueIn
-            JMSTestUtil.prepareNodes(info, getQeueIn(nodesIn), getQeueOut(nodesOut), nodes);
+            prepareNodes();
 
             // send messages
-            JMSTestUtil.sendMessages(info, action, nodesIn, getQeueIn(nodesIn), nbMessageToSend, displayMessagesEvery);
+            sendMessages();
 
             // check all messages are in the queueIn
-            List<Map<String, String>> messagesQueueIn = JMSTestUtil.browseMessages(info, getQeueIn(nodesIn), nodesIn);
+            List<Map<String, String>> messagesQueueIn = browseMessages(getQeueIn(), nodesIn);
             if (nbMessageToSend != messagesQueueIn.size())
-                throw new IllegalStateException("[" + info + "] bad number od messages: nbMessageToSend=" + nbMessageToSend + " messagesQueueIn="
+                throw new IllegalStateException(info + " bad number od messages: nbMessageToSend=" + nbMessageToSend + " messagesQueueIn="
                         + messagesQueueIn.size());
 
             // resume the consuption of queueIn
-            JMSTestUtil.invokeOP(info, "resume", getQeueIn(nodesIn), nodesIn);
+            invokeOP("resume", getQeueIn(), nodesIn);
 
             // wait for message processing on server side
             Thread.sleep(10000);
 
             // Kill or clean shutdown one node then restart it
-            JMSTestUtil.executeProcess(info, opKillOrShutdown, nodeToKillOrShutdown);
+            executeProcess(opKillOrShutdown, nodeToKillOrShutdown);
             Thread.sleep(20000);
-            JMSTestUtil.executeProcess(info, TestUtil.SCRIPT_START, nodeToKillOrShutdown);
+            executeProcess(TestUtil.SCRIPT_START, nodeToKillOrShutdown);
 
             // check all messages are in the queueOut
             Thread.sleep(60000);// wait for nodeToKillOrShutdown to be up and running + wait for recovery mecanism
-            Pair<Boolean, String> result = JMSTestUtil.checkAllMessagesDelivered(info, nbMessageToSend, getQeueOut(nodesOut), 15, nodesOut);
+            JMSAllResults resultsTempo = checkAllMessagesDelivered(getQeueOut(), 15, currentLoop, nodesOut);
+            long endTimeLoop = System.currentTimeMillis();
+            resultsTempo.setTimeInMs(endTimeLoop - startTimeLoop);
+            log.info(resultsTempo);
+            allResults.addLast(resultsTempo);
 
             // shutdown/Kill nodes to stop the test
-            JMSTestUtil.executeProcess(info, TestUtil.SCRIPT_KILL, nodes);
-            if (!result.getKey()) throw new IllegalStateException("[" + info + "] Missing or duplicate messages after " + i + " run(s): " + result.getValue());
-            log.info("===================> [" + info + "] End running test " + i);
+            executeProcess(TestUtil.SCRIPT_KILL, nodes);
+
+            if (!resultsTempo.isAllDelivered())
+                throw new IllegalStateException(info + " Missing or duplicate messages after " + currentLoop + " run(s): " + resultsTempo.toString());
+            log.info("===================> " + info + " End running test " + currentLoop);
         }
+        log.info("******************** End running " + testName + " test");
+
+        long endTime = System.currentTimeMillis();
+        displayResults(allResults, endTime - startTime);
+    }
+
+    private void displayResults(LinkedList<JMSAllResults> allResults, long totalTime) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("All results for test '").append(testName).append("' executed in ").append(totalTime).append(" ms").append(CR);
+        for (JMSAllResults jmsAllResults : allResults) {
+            sb.append(jmsAllResults.toString());
+        }
+        log.info(sb.toString());
     }
 
 }
