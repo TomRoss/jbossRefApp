@@ -7,6 +7,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.app.minibank.minibankref.JBNode;
 import org.app.minibank.minibankref.TestUtil;
 import org.app.minibank.minibankref1.action.CallJMSAction1;
+import org.app.minibank.minibankref1.action.CallJPAAction1;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
@@ -170,8 +172,76 @@ public class ReliabilityJMSTest {
     }
 
     @Test
-    // @Ignore
-    public void simpleTest9() throws Exception {
+    public void localDatabaseShutdownTest9() throws Exception {
+        String tn = "Local-Database-Shutdown";
+        int nbLaunchTest = loop;
+        int nbMsgToSend = nbmsg;
+        int displayMsgEvery = 500;
+        CallJPAAction1 action = new CallJPAAction1();
+        JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
+        JBNode[] nodesOut = nodesIn;
+        JBNode[] nodes = nodesIn;
+        String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
+        JBNode nodeForOp = TestUtil.node1A;
+
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        test.runJMSTest();
+    }
+
+    @Test
+    public void localDatabaseKillTest10() throws Exception {
+        String tn = "Local-Database-Kill";
+        int nbLaunchTest = loop;
+        int nbMsgToSend = nbmsg;
+        int displayMsgEvery = 500;
+        CallJPAAction1 action = new CallJPAAction1();
+        JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
+        JBNode[] nodesOut = nodesIn;
+        JBNode[] nodes = nodesIn;
+        String opKillOrShutdown = TestUtil.SCRIPT_KILL;
+        JBNode nodeForOp = TestUtil.node1A;
+
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        test.runJMSTest();
+    }
+
+    @Test
+    public void remoteDatabaseShutdownTest11() throws Exception {
+        String tn = "remote-Database-Shutdown";
+        int nbLaunchTest = loop;
+        int nbMsgToSend = nbmsg;
+        int displayMsgEvery = 500;
+        CallJPAAction1 action = new CallJPAAction1();
+        JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
+        JBNode[] nodesOut = nodesIn;
+        JBNode[] nodes = ArrayUtils.addAll(nodesIn, TestUtil.node1A, TestUtil.node1B);
+        String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
+        JBNode nodeForOp = TestUtil.node1A;
+
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        test.runJMSTest();
+    }
+
+    @Test
+    public void remoteDatabaseKillTest12() throws Exception {
+        String tn = "remote-Database-Kill";
+        int nbLaunchTest = loop;
+        int nbMsgToSend = nbmsg;
+        int displayMsgEvery = 500;
+        CallJPAAction1 action = new CallJPAAction1();
+        JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
+        JBNode[] nodesOut = nodesIn;
+        JBNode[] nodes = ArrayUtils.addAll(nodesIn, TestUtil.node1A, TestUtil.node1B);
+        String opKillOrShutdown = TestUtil.SCRIPT_KILL;
+        JBNode nodeForOp = TestUtil.node1A;
+
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        test.runJMSTest();
+    }
+
+    @Test
+    @Ignore
+    public void simpleTest13() throws Exception {
         String tn = "Simple";
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
@@ -201,6 +271,10 @@ public class ReliabilityJMSTest {
             rjt.tests.add(6);
             rjt.tests.add(7);
             rjt.tests.add(8);
+            rjt.tests.add(9);
+            rjt.tests.add(10);
+            rjt.tests.add(11);
+            rjt.tests.add(12);
         }
         for (int test : rjt.tests) {
             switch (test) {
@@ -229,7 +303,19 @@ public class ReliabilityJMSTest {
                 rjt.remoteRemoteKillTest8();
                 break;
             case 9:
-                rjt.simpleTest9();
+                rjt.localDatabaseShutdownTest9();
+                break;
+            case 10:
+                rjt.localDatabaseKillTest10();
+                break;
+            case 11:
+                rjt.remoteDatabaseShutdownTest11();
+                break;
+            case 12:
+                rjt.remoteDatabaseKillTest12();
+                break;
+            case 13:
+                rjt.simpleTest13();
                 break;
 
             default:

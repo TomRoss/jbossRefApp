@@ -33,6 +33,10 @@ public class TestUtil {
 
     public static final String SCRIPT_KILL = isWindows() ? "kill_node.cmd" : "kill_node.sh";
 
+    public static final String SCRIPT_START_DB = isWindows() ? "db_start.cmd" : "db_start.sh";
+
+    public static final String SCRIPT_STOP_DB = isWindows() ? "db_stop.cmd" : "db_stop.sh";
+
     public static final JBNode node1A = new JBNode("node_1A", "localhost", "100", "org/app/minibank/minibankref1/jms/QueueA",
             "org/app/minibank/minibankref1/jms/QueueB");
 

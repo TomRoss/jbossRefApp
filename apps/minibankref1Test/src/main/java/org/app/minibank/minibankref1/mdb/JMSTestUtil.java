@@ -19,6 +19,9 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -28,8 +31,10 @@ import org.apache.log4j.Logger;
 import org.app.minibank.minibankref.EAP6NamingContext;
 import org.app.minibank.minibankref.JBNode;
 import org.app.minibank.minibankref.TestUtil;
-import org.app.minibank.minibankref1.action.CallJMSAction1;
+import org.app.minibank.minibankref1.action.BaseAction1;
+import org.app.minibank.minibankref1.action.CallJPAAction1;
 import org.app.minibank.minibankref1.jmx.ClientJmxRolesTest;
+import org.app.minibank.minibankref1.jpa.MyEntity1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,7 +58,7 @@ public final class JMSTestUtil {
 
     private final JBNode[] nodesOut;
 
-    private final CallJMSAction1 action;
+    private final BaseAction1 action;
 
     private final String opKillOrShutdown;
 
@@ -61,8 +66,12 @@ public final class JMSTestUtil {
 
     private int currentLoop = 1;
 
+    private boolean isSendToDb = false;
+
+    private EntityManagerFactory emf;
+
     public JMSTestUtil(String testName, int nbLaunchTest, int nbMessageToSend, int displayMsgEvery, JBNode[] nodes, JBNode[] nodesIn, JBNode[] nodesOut,
-            CallJMSAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) {
+            BaseAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) {
         this.testName = testName;
         this.nbLaunchTest = nbLaunchTest;
         this.nbMessageToSend = nbMessageToSend;
@@ -73,7 +82,7 @@ public final class JMSTestUtil {
         this.action = action;
         this.opKillOrShutdown = opKillOrShutdown;
         this.nodeToKillOrShutdown = nodeToKillOrShutdown;
-
+        this.isSendToDb = action instanceof CallJPAAction1;
     }
 
     public void executeProcess(String commandToExec, JBNode... nodesToExecCmd) throws Exception {
@@ -90,6 +99,20 @@ public final class JMSTestUtil {
             resultHandler.waitFor(5000);
             log.info(getMesageInfo() + " end launching '" + line + "'");
         }
+    }
+
+    public void executeProcessDB(String commandToExec) throws Exception {
+        String nodeScript = TestUtil.NODE_BASE_PATH + TestUtil.PATH_SEPARATOR + commandToExec;
+        File fileNode = new File(nodeScript);
+        String line = "cmd /C " + fileNode.getName();
+        log.info(getMesageInfo() + " start launching '" + line + "'");
+        CommandLine cmdLine = CommandLine.parse(line);
+        DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
+        DefaultExecutor executor = new DefaultExecutor();
+        executor.setWorkingDirectory(fileNode.getParentFile());
+        executor.execute(cmdLine, resultHandler);
+        resultHandler.waitFor(1000);
+        log.info(getMesageInfo() + " end launching '" + line + "'");
     }
 
     public void pingServer(JBNode... nodesToPing) throws Exception {
@@ -110,23 +133,49 @@ public final class JMSTestUtil {
 
     public void cleanDirs(JBNode... nodesToClean) throws Exception {
         for (JBNode node : nodesToClean) {
-            String dataDir = node.getPath() + TestUtil.PATH_SEPARATOR + "data";
-            String logDir = node.getPath() + TestUtil.PATH_SEPARATOR + "log";
-            String tmpDir = node.getPath() + TestUtil.PATH_SEPARATOR + "tmp";
+            File dataDir = new File(node.getPath() + TestUtil.PATH_SEPARATOR + "data");
+            File logDir = new File(node.getPath() + TestUtil.PATH_SEPARATOR + "log");
+            File tmpDir = new File(node.getPath() + TestUtil.PATH_SEPARATOR + "tmp");
             log.info(getMesageInfo() + " Cleaning dirs: " + dataDir + ", " + logDir + ", " + tmpDir);
-            FileUtils.cleanDirectory(new File(dataDir));
-            FileUtils.cleanDirectory(new File(logDir));
-            FileUtils.cleanDirectory(new File(tmpDir));
+            FileUtils.cleanDirectory(dataDir);
+            FileUtils.cleanDirectory(logDir);
+            FileUtils.cleanDirectory(tmpDir);
         }
+        // clean database
+        File dbDir = new File(TestUtil.NODE_BASE_PATH + TestUtil.PATH_SEPARATOR + "db" + TestUtil.PATH_SEPARATOR + "minibank");
+        log.info(getMesageInfo() + " Cleaning dir: " + dbDir);
+        if (dbDir.exists()) {
+            FileUtils.cleanDirectory(dbDir);
+            dbDir.delete();
+        }
+    }
+
+    private EntityManagerFactory getEmf() {
+        if (emf == null) {
+            emf = Persistence.createEntityManagerFactory("minibanktest");
+        }
+        return emf;
+    }
+
+    public void cleanDatabase() {
+        EntityManager em = getEmf().createEntityManager();
+        em.getTransaction().begin();
+        int nbDeleted = em.createQuery("DELETE FROM MyEntity1").executeUpdate();
+        em.getTransaction().commit();
+        log.info("" + nbDeleted + " records have been deleted from MyEntity1");
+        em.close();
     }
 
     public void prepareNodes() throws Exception {
         // Ensure nodes are down
         executeProcess(TestUtil.SCRIPT_KILL, nodes);
+        if (isSendToDb) executeProcessDB(TestUtil.SCRIPT_STOP_DB);
 
-        // remove all files in data, log and tmp dirs
+        // Clean DB + remove all files in data, log and tmp dirs
         cleanDirs(nodes);
 
+        // start database
+        if (isSendToDb) executeProcessDB(TestUtil.SCRIPT_START_DB);
         // start nodes
         executeProcess(TestUtil.SCRIPT_START, nodes);
         pingServer(nodes);
@@ -244,7 +293,7 @@ public final class JMSTestUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Map<String, String>> browseMessages(String queueNameToInspect, JBNode... nodesToBrowse) throws Exception {
+    public List<Map<String, String>> browseMessagesJMS(String queueNameToInspect, JBNode... nodesToBrowse) throws Exception {
         List<Map<String, String>> jsonReadValue = new ArrayList<Map<String, String>>();
         StringBuilder nodesStr = new StringBuilder();
         for (JBNode node : nodesToBrowse) {
@@ -258,6 +307,24 @@ public final class JMSTestUtil {
         return jsonReadValue;
     }
 
+    public List<Map<String, String>> browseMessagesDB() throws Exception {
+        List<Map<String, String>> jsonReadValue = new ArrayList<Map<String, String>>();
+        EntityManager em = getEmf().createEntityManager();
+        List<MyEntity1> myEntities = em.createQuery("select e from MyEntity1 e", MyEntity1.class).getResultList();
+
+        for (MyEntity1 myEntity1 : myEntities) {
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("JMSCorrelationID", myEntity1.getCorrelationId());
+            jsonReadValue.add(map);
+            if (log.isDebugEnabled()) log.debug("==> " + myEntity1 + " json=" + myEntity1.getJson());
+        }
+        em.close();
+
+        log.debug(getMesageInfo() + " jsonReadValue=" + jsonReadValue);
+        log.info(getMesageInfo() + " Found '" + jsonReadValue.size() + "' messages in Database.");
+        return jsonReadValue;
+    }
+
     public void removeMessagesFromAllQueues() throws Exception {
         invokeOP("removeMessages", getQeueIn(), nodes);
         invokeOP("removeMessages", getQeueIn() + "Error", nodes);
@@ -266,13 +333,13 @@ public final class JMSTestUtil {
         invokeOP("removeMessages", getQeueOut() + "Error", nodes);
     }
 
-    public JMSResult checkMessagesDelivered(List<Map<String, String>> messagesQueueOut, int loopNumber, int retryNumber) {
-        List<Integer> elements = new ArrayList<Integer>(messagesQueueOut.size());
+    public JMSResult checkMessagesDelivered(List<Map<String, String>> messagesOut, int loopNumber, int retryNumber) {
+        List<Integer> elements = new ArrayList<Integer>(messagesOut.size());
         int nbMissingElements = 0;
         int nbDuplicateElements = 0;
         StringBuilder missingStr = new StringBuilder();
         StringBuilder duplicateStr = new StringBuilder();
-        for (Map<String, String> map : messagesQueueOut) {
+        for (Map<String, String> map : messagesOut) {
             String callIdStr = map.get("JMSCorrelationID");
             int callId = Integer.parseInt(callIdStr);
             if (!elements.contains(callId)) elements.add(callId);
@@ -320,8 +387,11 @@ public final class JMSTestUtil {
                 break;
             }
             log.info(getMesageInfo() + " Retry number " + retry);
-            List<Map<String, String>> messagesQueueOut = browseMessages(queueNameToInspect, nodesToBrowse);
-            JMSResult resTempo = checkMessagesDelivered(messagesQueueOut, loopNumber, retry);
+            List<Map<String, String>> messagesOut = null;
+            if (isSendToDb) messagesOut = browseMessagesDB();
+            else messagesOut = browseMessagesJMS(queueNameToInspect, nodesToBrowse);
+
+            JMSResult resTempo = checkMessagesDelivered(messagesOut, loopNumber, retry);
             results.add(resTempo);
             retry++;
             if (!resTempo.isAllDelivered()) Thread.sleep(60000);
@@ -359,7 +429,7 @@ public final class JMSTestUtil {
             sendMessages();
 
             // check all messages are in the queueIn
-            List<Map<String, String>> messagesQueueIn = browseMessages(getQeueIn(), nodesIn);
+            List<Map<String, String>> messagesQueueIn = browseMessagesJMS(getQeueIn(), nodesIn);
             if (nbMessageToSend != messagesQueueIn.size())
                 throw new IllegalStateException(info + " bad number od messages: nbMessageToSend=" + nbMessageToSend + " messagesQueueIn="
                         + messagesQueueIn.size());
@@ -385,6 +455,7 @@ public final class JMSTestUtil {
 
             // shutdown/Kill nodes to stop the test
             executeProcess(TestUtil.SCRIPT_KILL, nodes);
+            if (isSendToDb) executeProcessDB(TestUtil.SCRIPT_STOP_DB);
 
             if (!resultsTempo.isAllDelivered())
                 throw new IllegalStateException(info + " Missing or duplicate messages after " + currentLoop + " run(s): " + resultsTempo.toString());

@@ -9,6 +9,8 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.TextMessage;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref1.action.CallContext1;
@@ -49,6 +51,9 @@ public class MdbBar1 implements MessageListener {
     @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueB")
     private Queue queueB;
 
+    @PersistenceContext(unitName = "minibank")
+    EntityManager em;
+
     public void onMessage(Message message) {
         if (!(message instanceof TextMessage)) {
             throw new RuntimeException("message is not a text message but " + message.getClass());
@@ -62,7 +67,7 @@ public class MdbBar1 implements MessageListener {
             ObjectMapper mapper = new ObjectMapper();
             IAction1 action = mapper.readValue(inText, actionClass);
 
-            CallContext1 callContext1 = new CallContext1(this, ctx, "onMessage", connectionFactoryNode1, connectionFactoryNode2, queueB, message);
+            CallContext1 callContext1 = new CallContext1(this, ctx, "onMessage", connectionFactoryNode1, connectionFactoryNode2, queueB, message, em);
             action.doIt(callContext1);
 
         } catch (Exception e) {

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd" version="2.0">
+	<persistence-unit name="minibank" transaction-type="JTA">
+		<!-- see https://docs.jboss.org/author/display/AS71/JPA+Reference+Guide -->
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<jta-data-source>java:/minibankDS</jta-data-source>
+		<class>org.app.minibank.minibankref1.jpa.MyEntity1</class>
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.DerbyTenSevenDialect" />
+			<property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.JBossTransactionManagerLookup" />
+			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<!--
+				<property name="hibernate.show_sql" value="true"/>
+				<property name="hibernate.format_sql" value="true"/>
+			-->
+		</properties>
+	</persistence-unit>
+
+
+</persistence>

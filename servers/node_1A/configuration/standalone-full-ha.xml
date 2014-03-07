@@ -151,9 +151,34 @@
         <subsystem xmlns="urn:jboss:domain:cmp:1.1"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.1">
             <datasources>
+                <xa-datasource jndi-name="java:/minibankDS" pool-name="minibankDS" enabled="true" use-java-context="true" use-ccm="true">
+                    <xa-datasource-property name="PortNumber">
+                        1527
+                    </xa-datasource-property>
+                    <xa-datasource-property name="DatabaseName">
+                        minibank;create=true
+                    </xa-datasource-property>
+                    <xa-datasource-property name="ServerName">
+                        localhost
+                    </xa-datasource-property>
+                    <driver>derby</driver>
+                    <xa-pool>
+                        <min-pool-size>5</min-pool-size>
+                        <max-pool-size>10</max-pool-size>
+                        <prefill>false</prefill>
+                        <use-strict-min>false</use-strict-min>
+                        <flush-strategy>FailingConnectionOnly</flush-strategy>
+                        <is-same-rm-override>true</is-same-rm-override>
+                        <no-tx-separate-pools>true</no-tx-separate-pools>
+                    </xa-pool>
+                </xa-datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                    </driver>
+                    <driver name="derby" module="org.apache.derby">
+                        <driver-class>org.apache.derby.jdbc.ClientDriver</driver-class>
+                        <xa-datasource-class>org.apache.derby.jdbc.ClientXADataSource</xa-datasource-class>
                     </driver>
                 </drivers>
             </datasources>
@@ -167,6 +192,7 @@
                 <module name="org.jboss.remoting-jmx" slot="main"/>
                 <module name="org.jboss.remote-naming" slot="main"/>
                 <module name="org.hornetq" slot="main"/>
+                <module name="org.apache.derby" slot="main"/>
             </global-modules>
             <spec-descriptor-property-replacement>true</spec-descriptor-property-replacement>
             <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>

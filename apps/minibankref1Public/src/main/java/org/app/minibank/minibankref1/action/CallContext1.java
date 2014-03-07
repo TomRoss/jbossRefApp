@@ -10,6 +10,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.Queue;
 import javax.naming.InitialContext;
+import javax.persistence.EntityManager;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -40,6 +41,8 @@ public class CallContext1 {
 
     private Message message;
 
+    private EntityManager em;
+
     static {
         try {
             tm = (TransactionManager) new InitialContext().lookup("java:/TransactionManager");
@@ -66,11 +69,13 @@ public class CallContext1 {
 
     }
 
-    public CallContext1(Object receiver, EJBContext ejbContext, String method, ConnectionFactory localCF, ConnectionFactory remoteCF, Queue q, Message message) {
+    public CallContext1(Object receiver, EJBContext ejbContext, String method, ConnectionFactory localCF, ConnectionFactory remoteCF, Queue q, Message message,
+            EntityManager em) {
         this(receiver, ejbContext, method, null, message);
         this.connectionFactoryLocal = localCF;
         this.connectionFactoryRemote = remoteCF;
         this.localQueue = q;
+        this.em = em;
     }
 
     public CallContext1(Object receiver, EJBContext ejbContext, String method, ConnectionFactory localCF, ConnectionFactory remoteCF, Queue q) {
@@ -163,6 +168,10 @@ public class CallContext1 {
 
     public void setMessage(Message message) {
         this.message = message;
+    }
+
+    public EntityManager getEntityManager() {
+        return em;
     }
 
 }
