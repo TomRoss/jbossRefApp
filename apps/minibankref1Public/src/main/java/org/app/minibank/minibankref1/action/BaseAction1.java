@@ -35,13 +35,13 @@ public class BaseAction1 implements IAction1 {
         cc.getResult().put("message", message);
         cc.getResult().put("callId", callId);
 
-        if (dolog && callId % displaylogEvery == 0) log.info("Enter doAction '" + currentCount + "' with " + cc.getResult());
+        if (dolog && callId % displaylogEvery == 0) log.info("Enter doAction '" + currentCount + "' with " + cc.getResult() + " using action " + toString());
         if (throwCheckedException) throw new AccountException(message);
         if (setRollbackOnly) cc.getEjbContext().setRollbackOnly();
         pause(pauseBefore, "before");
         Object result = doItBasic(cc);
         pause(pauseAfter, "after");
-        if (dolog && callId % displaylogEvery == 0) log.info("Exit doAction '" + currentCount + "' with " + cc.getResult());
+        if (dolog && callId % displaylogEvery == 0) log.info("Exit doAction '" + currentCount + "' with " + cc.getResult() + " using action " + toString());
         return result;
     }
 
@@ -58,11 +58,6 @@ public class BaseAction1 implements IAction1 {
                 // do nothing
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName();
     }
 
     public boolean isSetRollbackOnly() {
@@ -137,4 +132,9 @@ public class BaseAction1 implements IAction1 {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + " [setRollbackOnly=" + setRollbackOnly + ", dolog=" + dolog + ", displaylogEvery=" + displaylogEvery
+                + ", throwCheckedException=" + throwCheckedException + ", pauseBefore=" + pauseBefore + ", pauseAfter=" + pauseAfter + "]";
+    }
 }

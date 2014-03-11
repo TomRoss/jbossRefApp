@@ -15,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.app.minibank.minibankref1.action.CallContext1;
 import org.app.minibank.minibankref1.action.IAction1;
+import org.app.minibank.minibankref1.jpa.ConstantPU;
 import org.jboss.ejb3.annotation.ResourceAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +52,8 @@ public class MdbBar1 implements MessageListener {
     @Resource(mappedName = "java:/org/app/minibank/minibankref1/jms/QueueB")
     private Queue queueB;
 
-    @PersistenceContext(unitName = "minibank")
+    // property substitution do not work: @PersistenceContext(unitName = "${minibank.persistence.unit}")
+    @PersistenceContext(unitName = ConstantPU.PU)
     EntityManager em;
 
     public void onMessage(Message message) {

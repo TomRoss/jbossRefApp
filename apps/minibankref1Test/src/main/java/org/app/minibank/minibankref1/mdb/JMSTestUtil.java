@@ -34,6 +34,7 @@ import org.app.minibank.minibankref.TestUtil;
 import org.app.minibank.minibankref1.action.BaseAction1;
 import org.app.minibank.minibankref1.action.CallJPAAction1;
 import org.app.minibank.minibankref1.jmx.ClientJmxRolesTest;
+import org.app.minibank.minibankref1.jpa.ConstantPU;
 import org.app.minibank.minibankref1.jpa.MyEntity1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -90,14 +91,14 @@ public final class JMSTestUtil {
             String nodeScript = node.getPath() + TestUtil.PATH_SEPARATOR + commandToExec;
             File fileNode = new File(nodeScript);
             String line = "cmd /C " + fileNode.getName();
-            log.info(getMesageInfo() + " start launching '" + line + "'");
+            log.info(getMesageInfo() + " start launching '" + line + "' for node:" + node);
             CommandLine cmdLine = CommandLine.parse(line);
             DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
             DefaultExecutor executor = new DefaultExecutor();
             executor.setWorkingDirectory(fileNode.getParentFile());
             executor.execute(cmdLine, resultHandler);
             resultHandler.waitFor(5000);
-            log.info(getMesageInfo() + " end launching '" + line + "'");
+            log.info(getMesageInfo() + " end launching '" + line + "' for node:" + node);
         }
     }
 
@@ -105,14 +106,14 @@ public final class JMSTestUtil {
         String nodeScript = TestUtil.NODE_BASE_PATH + TestUtil.PATH_SEPARATOR + commandToExec;
         File fileNode = new File(nodeScript);
         String line = "cmd /C " + fileNode.getName();
-        log.info(getMesageInfo() + " start launching '" + line + "'");
+        log.info(getMesageInfo() + " start launching '" + line + "' on dir " + TestUtil.NODE_BASE_PATH);
         CommandLine cmdLine = CommandLine.parse(line);
         DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
         DefaultExecutor executor = new DefaultExecutor();
         executor.setWorkingDirectory(fileNode.getParentFile());
         executor.execute(cmdLine, resultHandler);
         resultHandler.waitFor(1000);
-        log.info(getMesageInfo() + " end launching '" + line + "'");
+        log.info(getMesageInfo() + " end launching '" + line + "' on dir " + TestUtil.NODE_BASE_PATH);
     }
 
     public void pingServer(JBNode... nodesToPing) throws Exception {
@@ -142,7 +143,7 @@ public final class JMSTestUtil {
             FileUtils.cleanDirectory(tmpDir);
         }
         // clean database
-        File dbDir = new File(TestUtil.NODE_BASE_PATH + TestUtil.PATH_SEPARATOR + "db" + TestUtil.PATH_SEPARATOR + "minibank");
+        File dbDir = new File(TestUtil.NODE_BASE_PATH + TestUtil.PATH_SEPARATOR + "db" + TestUtil.PATH_SEPARATOR + "minibank2");
         log.info(getMesageInfo() + " Cleaning dir: " + dbDir);
         if (dbDir.exists()) {
             FileUtils.cleanDirectory(dbDir);
@@ -152,7 +153,7 @@ public final class JMSTestUtil {
 
     private EntityManagerFactory getEmf() {
         if (emf == null) {
-            emf = Persistence.createEntityManagerFactory("minibanktest");
+            emf = Persistence.createEntityManagerFactory(ConstantPU.PU);
         }
         return emf;
     }
@@ -162,7 +163,7 @@ public final class JMSTestUtil {
         em.getTransaction().begin();
         int nbDeleted = em.createQuery("DELETE FROM MyEntity1").executeUpdate();
         em.getTransaction().commit();
-        log.info("" + nbDeleted + " records have been deleted from MyEntity1");
+        log.info(getMesageInfo() + " " + nbDeleted + " records have been deleted from MyEntity1");
         em.close();
     }
 
@@ -175,7 +176,12 @@ public final class JMSTestUtil {
         cleanDirs(nodes);
 
         // start database
-        if (isSendToDb) executeProcessDB(TestUtil.SCRIPT_START_DB);
+        if (isSendToDb) {
+            Thread.sleep(3000L);
+            executeProcessDB(TestUtil.SCRIPT_START_DB);
+            cleanDatabase();
+        }
+
         // start nodes
         executeProcess(TestUtil.SCRIPT_START, nodes);
         pingServer(nodes);
@@ -387,9 +393,13 @@ public final class JMSTestUtil {
                 break;
             }
             log.info(getMesageInfo() + " Retry number " + retry);
-            List<Map<String, String>> messagesOut = null;
-            if (isSendToDb) messagesOut = browseMessagesDB();
-            else messagesOut = browseMessagesJMS(queueNameToInspect, nodesToBrowse);
+            List<Map<String, String>> messagesOut = new ArrayList<Map<String, String>>();
+            try {
+                if (isSendToDb) messagesOut = browseMessagesDB();
+                else messagesOut = browseMessagesJMS(queueNameToInspect, nodesToBrowse);
+            } catch (Exception e) {
+                log.error("could not browse messages: " + e, e);
+            }
 
             JMSResult resTempo = checkMessagesDelivered(messagesOut, loopNumber, retry);
             results.add(resTempo);

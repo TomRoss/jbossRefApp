@@ -22,12 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.apache.derby">
+<module xmlns="urn:jboss:module:1.1" name="com.oracle">
     <resources>
-        <resource-root path="derbyclient-10.10.1.1.jar"/>
-        <!-- Insert resources here -->
+		<!-- to activate if you need to use oracle drivers + of course add the jar
+        <resource-root path="ojdbc6-11.2.0.1.jar"/>
+		-->
     </resources>
-
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
