@@ -27,12 +27,15 @@ public class ReliabilityJMSTest {
     @Parameter(names = { "-nbmsg", "-n" }, description = "nb JMS messages to send (default to 10000)", required = false)
     int nbmsg = 10000;
 
+    private DbType dbType = DbType.H2;
+
     @Test
     public void localLocalShutdownTest1() throws Exception {
         String tn = "Local-Local-Shutdown";
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
         JBNode[] nodesOut = nodesIn;
@@ -40,7 +43,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -50,6 +53,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
         JBNode[] nodesOut = nodesIn;
@@ -57,7 +61,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_KILL;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -67,6 +71,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
@@ -76,7 +81,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -86,6 +91,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
@@ -95,7 +101,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_KILL;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -105,6 +111,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
         JBNode[] nodesOut = { TestUtil.node1A, TestUtil.node1B };
@@ -112,7 +119,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -122,6 +129,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
         JBNode[] nodesOut = { TestUtil.node1A, TestUtil.node1B };
@@ -129,7 +137,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_KILL;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -139,6 +147,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
@@ -148,7 +157,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -158,6 +167,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
@@ -167,7 +177,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_KILL;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -177,6 +187,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJPAAction1 action = new CallJPAAction1();
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
         JBNode[] nodesOut = nodesIn;
@@ -184,7 +195,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -194,6 +205,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJPAAction1 action = new CallJPAAction1();
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
         JBNode[] nodesOut = nodesIn;
@@ -201,7 +213,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_KILL;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -211,6 +223,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJPAAction1 action = new CallJPAAction1();
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
         JBNode[] nodesOut = nodesIn;
@@ -218,7 +231,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_SHUTDOWN;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -228,6 +241,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJPAAction1 action = new CallJPAAction1();
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
         JBNode[] nodesOut = nodesIn;
@@ -235,7 +249,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_KILL;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.runJMSTest();
     }
 
@@ -246,6 +260,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
+        DbType db = dbType;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
@@ -255,7 +270,7 @@ public class ReliabilityJMSTest {
         String opKillOrShutdown = TestUtil.SCRIPT_KILL;
         JBNode nodeForOp = TestUtil.node1A;
 
-        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
+        JMSTestUtil test = new JMSTestUtil(tn, nbLaunchTest, nbMsgToSend, displayMsgEvery, db, nodes, nodesIn, nodesOut, action, opKillOrShutdown, nodeForOp);
         test.checkAllMessagesDelivered(test.getQeueOut(), 15, 1, nodesOut);
     }
 

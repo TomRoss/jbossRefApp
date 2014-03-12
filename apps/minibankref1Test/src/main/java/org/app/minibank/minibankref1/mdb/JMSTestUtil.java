@@ -1,6 +1,7 @@
 package org.app.minibank.minibankref1.mdb;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +35,6 @@ import org.app.minibank.minibankref.TestUtil;
 import org.app.minibank.minibankref1.action.BaseAction1;
 import org.app.minibank.minibankref1.action.CallJPAAction1;
 import org.app.minibank.minibankref1.jmx.ClientJmxRolesTest;
-import org.app.minibank.minibankref1.jpa.ConstantPU;
 import org.app.minibank.minibankref1.jpa.MyEntity1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,8 +71,12 @@ public final class JMSTestUtil {
 
     private EntityManagerFactory emf;
 
-    public JMSTestUtil(String testName, int nbLaunchTest, int nbMessageToSend, int displayMsgEvery, JBNode[] nodes, JBNode[] nodesIn, JBNode[] nodesOut,
-            BaseAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) {
+    private DbInfo dbInfo;
+
+    private final DbType defaultDbType;
+
+    public JMSTestUtil(String testName, int nbLaunchTest, int nbMessageToSend, int displayMsgEvery, DbType defaultDbType, JBNode[] nodes, JBNode[] nodesIn,
+            JBNode[] nodesOut, BaseAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) {
         this.testName = testName;
         this.nbLaunchTest = nbLaunchTest;
         this.nbMessageToSend = nbMessageToSend;
@@ -84,9 +88,41 @@ public final class JMSTestUtil {
         this.opKillOrShutdown = opKillOrShutdown;
         this.nodeToKillOrShutdown = nodeToKillOrShutdown;
         this.isSendToDb = action instanceof CallJPAAction1;
+        this.defaultDbType = defaultDbType;
+    }
+
+    public void readDbParamsFromCommonScript() throws Exception {
+
+        String commonScript = TestUtil.NODE_BASE_PATH + TestUtil.PATH_SEPARATOR + "minibankDb.properties";
+        log.info(getMesageInfo() + " start reading file '" + commonScript + "'");
+        Properties p = new Properties();
+        FileInputStream fis = new FileInputStream(new File(commonScript));
+        try {
+            p.load(fis);
+            String type = p.getProperty("MINIBANK_DB_TYPE", "H2");
+            DbType dbType = DbType.valueOf(type);
+
+            String dialect = p.getProperty("MINIBANK_DB_DIALECT", "org.hibernate.dialect.H2Dialect");
+            String url = p.getProperty("MINIBANK_DB_URL",
+                    "jdbc:h2:tcp://localhost:9092/minibank;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=60000;MULTI_THREADED=true");
+            String user = p.getProperty("MINIBANK_DB_USER", "sa");
+            String password = p.getProperty("MINIBANK_DB_PWD", "sa");
+            String driver = p.getProperty("MINIBANK_DB_DRIVER_NAME", "h2");
+            String noTxSeparatePools = p.getProperty("MINIBANK_DB_NO_TX_SEPARATE_POOLS", "false");
+
+            this.dbInfo = new DbInfo(dbType, dialect, url, user, password, driver, noTxSeparatePools);
+
+            log.info(getMesageInfo() + " end reading file '" + commonScript + "'");
+        } finally {
+            fis.close();
+        }
+
     }
 
     public void executeProcess(String commandToExec, JBNode... nodesToExecCmd) throws Exception {
+        Map<String, String> env = new HashMap<String, String>();
+        env.putAll(System.getenv());
+        env.put("MINIBANK_DB_TYPE", defaultDbType.name());
         for (JBNode node : nodesToExecCmd) {
             String nodeScript = node.getPath() + TestUtil.PATH_SEPARATOR + commandToExec;
             File fileNode = new File(nodeScript);
@@ -96,7 +132,7 @@ public final class JMSTestUtil {
             DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
             DefaultExecutor executor = new DefaultExecutor();
             executor.setWorkingDirectory(fileNode.getParentFile());
-            executor.execute(cmdLine, resultHandler);
+            executor.execute(cmdLine, env, resultHandler);
             resultHandler.waitFor(5000);
             log.info(getMesageInfo() + " end launching '" + line + "' for node:" + node);
         }
@@ -138,10 +174,20 @@ public final class JMSTestUtil {
             File logDir = new File(node.getPath() + TestUtil.PATH_SEPARATOR + "log");
             File tmpDir = new File(node.getPath() + TestUtil.PATH_SEPARATOR + "tmp");
             log.info(getMesageInfo() + " Cleaning dirs: " + dataDir + ", " + logDir + ", " + tmpDir);
-            FileUtils.cleanDirectory(dataDir);
-            FileUtils.cleanDirectory(logDir);
-            FileUtils.cleanDirectory(tmpDir);
+            if (dataDir.exists()) FileUtils.cleanDirectory(dataDir);
+            if (logDir.exists()) FileUtils.cleanDirectory(logDir);
+            if (tmpDir.exists()) FileUtils.cleanDirectory(tmpDir);
         }
+    }
+
+    private EntityManagerFactory getEmf() {
+        if (emf == null) {
+            emf = Persistence.createEntityManagerFactory("minibank", dbInfo.getPersistenceUnitProperties());
+        }
+        return emf;
+    }
+
+    public void cleanDatabaseDir() throws Exception {
         // clean database
         File dbDir = new File(TestUtil.NODE_BASE_PATH + TestUtil.PATH_SEPARATOR + "db" + TestUtil.PATH_SEPARATOR + "minibank2");
         log.info(getMesageInfo() + " Cleaning dir: " + dbDir);
@@ -151,14 +197,7 @@ public final class JMSTestUtil {
         }
     }
 
-    private EntityManagerFactory getEmf() {
-        if (emf == null) {
-            emf = Persistence.createEntityManagerFactory(ConstantPU.PU);
-        }
-        return emf;
-    }
-
-    public void cleanDatabase() {
+    public void cleanDatabaseRows() {
         EntityManager em = getEmf().createEntityManager();
         em.getTransaction().begin();
         int nbDeleted = em.createQuery("DELETE FROM MyEntity1").executeUpdate();
@@ -170,16 +209,20 @@ public final class JMSTestUtil {
     public void prepareNodes() throws Exception {
         // Ensure nodes are down
         executeProcess(TestUtil.SCRIPT_KILL, nodes);
-        if (isSendToDb) executeProcessDB(TestUtil.SCRIPT_STOP_DB);
 
-        // Clean DB + remove all files in data, log and tmp dirs
+        // remove all files in data, log and tmp dirs
         cleanDirs(nodes);
 
-        // start database
+        // prepare database if needed
         if (isSendToDb) {
-            Thread.sleep(3000L);
-            executeProcessDB(TestUtil.SCRIPT_START_DB);
-            cleanDatabase();
+            readDbParamsFromCommonScript();
+            if (!dbInfo.isOracle()) {
+                executeProcessDB(TestUtil.SCRIPT_STOP_DB);
+                Thread.sleep(3000L);
+                cleanDatabaseDir();
+                executeProcessDB(TestUtil.SCRIPT_START_DB);
+            }
+            cleanDatabaseRows();
         }
 
         // start nodes
@@ -448,7 +491,7 @@ public final class JMSTestUtil {
             invokeOP("resume", getQeueIn(), nodesIn);
 
             // wait for message processing on server side
-            Thread.sleep(10000);
+            Thread.sleep(9000);
 
             // Kill or clean shutdown one node then restart it
             executeProcess(opKillOrShutdown, nodeToKillOrShutdown);

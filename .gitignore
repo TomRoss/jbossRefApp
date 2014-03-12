@@ -57,4 +57,5 @@ servers/*/configuration/logging.properties
 customize/
 LogServer/
 servers/db/minibank
+servers/minibankDb.properties
 *.zip

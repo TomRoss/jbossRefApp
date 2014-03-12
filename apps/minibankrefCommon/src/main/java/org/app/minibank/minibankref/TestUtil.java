@@ -27,6 +27,8 @@ public class TestUtil {
 
     public static final String NODE_BASE_PATH = ".." + PATH_SEPARATOR + ".." + PATH_SEPARATOR + "servers";
 
+    public static final String SCRIPT_COMMON = isWindows() ? "common.cmd" : "common.sh";
+
     public static final String SCRIPT_START = isWindows() ? "start_node.cmd" : "start_node.sh";
 
     public static final String SCRIPT_SHUTDOWN = isWindows() ? "stop_node.cmd" : "stop_node.sh";

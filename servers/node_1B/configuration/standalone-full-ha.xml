@@ -151,6 +151,30 @@
         <subsystem xmlns="urn:jboss:domain:cmp:1.1"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.1">
             <datasources>
+                <xa-datasource jndi-name="java:/minibankDS" pool-name="minibankDS" enabled="true" use-java-context="true">
+                    <xa-datasource-property name="URL">${minibank.db.url}</xa-datasource-property>
+                    <driver>${minibank.db.driver.name}</driver>
+                    <xa-pool>
+                        <min-pool-size>5</min-pool-size>
+                        <max-pool-size>10</max-pool-size>
+                        <is-same-rm-override>false</is-same-rm-override>
+                        <no-tx-separate-pools>${minibank.db.no.tx.separate.pools}</no-tx-separate-pools>
+                        <wrap-xa-resource>${minibank.db.wrap.xa.resource}</wrap-xa-resource>
+                    </xa-pool>
+                    <security>
+                        <user-name>${minibank.db.user}</user-name>
+                        <password>${minibank.db.pwd}</password>
+                    </security>
+                    <timeout>
+                        <set-tx-query-timeout>true</set-tx-query-timeout>
+                        <idle-timeout-minutes>5</idle-timeout-minutes>
+                    </timeout>
+                    <statement>
+                        <prepared-statement-cache-size>10</prepared-statement-cache-size>
+                        <share-prepared-statements>true</share-prepared-statements>
+                    </statement>
+                </xa-datasource>
+				<!--
                 <xa-datasource jndi-name="java:/minibankDS_H2" pool-name="minibankDS_H2" enabled="true" use-java-context="true">
                     <xa-datasource-property name="URL">
                         jdbc:h2:tcp://localhost:9092/minibank;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=60000;MULTI_THREADED=true
@@ -177,7 +201,6 @@
                         <share-prepared-statements>true</share-prepared-statements>
                     </statement>
                 </xa-datasource>
-				<!--
                 <xa-datasource jndi-name="java:/minibankDS_Derby" pool-name="minibankDS_Derby" enabled="true" use-java-context="true">
                     <xa-datasource-property name="ServerName">
                         localhost
@@ -221,8 +244,8 @@
                         <no-tx-separate-pools>true</no-tx-separate-pools>
                     </xa-pool>
                     <security>
-                        <user-name>...</user-name>
-                        <password>...</password>
+                        <user-name>TEST_ARTEDB</user-name>
+                        <password>TEST_ARTEDB</password>
                     </security>
                     <validation>
                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker"/>
@@ -243,15 +266,12 @@
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
                     </driver>
-					<!--
-                    <driver name="derby" module="org.apache.derby">
-                        <driver-class>org.apache.derby.jdbc.ClientDriver</driver-class>
-                        <xa-datasource-class>org.apache.derby.jdbc.ClientXADataSource</xa-datasource-class>
-                    </driver>
                     <driver name="oracle-XA" module="com.oracle">
                         <xa-datasource-class>oracle.jdbc.xa.client.OracleXADataSource</xa-datasource-class>
                     </driver>
-					-->
+                    <driver name="derby" module="org.apache.derby">
+                        <xa-datasource-class>org.apache.derby.jdbc.ClientXADataSource</xa-datasource-class>
+                    </driver>
                 </drivers>
             </datasources>
         </subsystem>
