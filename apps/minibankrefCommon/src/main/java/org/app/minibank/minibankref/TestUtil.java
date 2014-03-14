@@ -61,6 +61,11 @@ public class TestUtil {
 
     }
 
+	public static boolean isMac(){
+    	String osName=System.getProperty("os.name");
+    	return osName.contains("Mac OS X");
+    }
+    
     public static String getJndi1() {
         return "minibankref1/minibankref1Services/Foo1Bean!org.app.minibank.minibankref1.ejb.session.Foo1Remote";
     }
