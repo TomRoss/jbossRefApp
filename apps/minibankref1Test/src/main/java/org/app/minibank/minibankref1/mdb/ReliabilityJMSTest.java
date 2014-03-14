@@ -35,7 +35,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
         JBNode[] nodesOut = nodesIn;
@@ -53,7 +53,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
         JBNode[] nodesOut = nodesIn;
@@ -71,7 +71,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
@@ -91,7 +91,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node1A, TestUtil.node1B };
@@ -111,7 +111,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
         JBNode[] nodesOut = { TestUtil.node1A, TestUtil.node1B };
@@ -129,7 +129,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
         JBNode[] nodesOut = { TestUtil.node1A, TestUtil.node1B };
@@ -144,10 +144,10 @@ public class ReliabilityJMSTest {
     @Test
     public void remoteRemoteShutdownTest7() throws Exception {
         String tn = "Remote-Remote-Shutdown";
-        int nbLaunchTest = loop;
+        int nbLaunchTest = 1;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
@@ -167,7 +167,7 @@ public class ReliabilityJMSTest {
         int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
-        DbType db = dbType;
+        DbType db = DbType.H2EMBEDDED;
         CallJMSAction1 action = new CallJMSAction1();
         action.setSendToLocalQueue(false);
         JBNode[] nodesIn = { TestUtil.node2A, TestUtil.node2B };
