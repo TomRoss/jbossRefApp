@@ -126,15 +126,8 @@ public final class JMSTestUtil {
         for (JBNode node : nodesToExecCmd) {
             String nodeScript = node.getPath() + TestUtil.PATH_SEPARATOR + commandToExec;
             File fileNode = new File(nodeScript);
-            
-            String line = null;
-            if (TestUtil.isWindows()){
-            	line = "cmd /C " + fileNode.getName();
-            }
-            if (TestUtil.isMac()){
-            	line = "/bin/bash " + fileNode.getName();
-            }
-            
+            String line = TestUtil.isWindows() ? "cmd /C " : "/bin/bash ";
+            line += fileNode.getName();
             log.info(getMesageInfo() + " start launching '" + line + "' for node:" + node);
             CommandLine cmdLine = CommandLine.parse(line);
             DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
