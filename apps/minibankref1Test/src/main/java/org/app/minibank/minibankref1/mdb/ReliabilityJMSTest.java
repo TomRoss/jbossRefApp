@@ -144,7 +144,7 @@ public class ReliabilityJMSTest {
     @Test
     public void remoteRemoteShutdownTest7() throws Exception {
         String tn = "Remote-Remote-Shutdown";
-        int nbLaunchTest = 1;
+        int nbLaunchTest = loop;
         int nbMsgToSend = nbmsg;
         int displayMsgEvery = 500;
         DbType db = DbType.H2EMBEDDED;

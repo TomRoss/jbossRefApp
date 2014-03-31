@@ -511,8 +511,12 @@ public final class JMSTestUtil {
             executeProcess(TestUtil.SCRIPT_KILL, nodes);
             if (isSendToDb) executeProcessDB(TestUtil.SCRIPT_STOP_DB);
 
-            if (!resultsTempo.isAllDelivered())
-                throw new IllegalStateException(info + " Missing or duplicate messages after " + currentLoop + " run(s): " + resultsTempo.toString());
+            if (!resultsTempo.isAllDelivered()) {
+                IllegalStateException e = new IllegalStateException(info + " Missing or duplicate messages after " + currentLoop + " run(s): "
+                        + resultsTempo.toString());
+                log.error(e.getMessage(), e);
+                throw e;
+            }
             log.info("===================> " + info + " End running test " + currentLoop);
         }
         log.info("******************** End running " + testName + " test");
