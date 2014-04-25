@@ -2,6 +2,7 @@ package org.app.minibank.minibankref1.ejb.session;
 
 import static javax.ejb.TransactionAttributeType.*;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,23 @@ public class ClientEJBTest {
     public void simple1() throws Exception {
         Foo1Remote service = getFoo1Remote();
         log.info(service.defaultTxPropagation(new BaseAction1()));
+    }
+
+    @Test
+    public void hotDeploy() throws Exception {
+
+        for (int i = 0; i < 2000; i++) {
+            log.info("restart " + i);
+            File file = new File("../../servers/node_1A/deployments/minibankref1-3.0.0-SNAPSHOT.ear");
+            log.info("touching " + file.getAbsolutePath());
+            file.setLastModified(System.currentTimeMillis());
+            // Thread.sleep(1000);
+            log.info("waiting 60 secs");
+            Thread.sleep(60000);
+            log.info("trying ejb");
+            simple1();
+            log.info("run OK");
+        }
     }
 
     @Test
