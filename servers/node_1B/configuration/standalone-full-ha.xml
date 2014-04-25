@@ -548,8 +548,6 @@
                     </address-setting>
                     <address-setting match="jms.queue.org.app.minibank.minibankref1.jms.QueueA">
                         <dead-letter-address>jms.queue.org.app.minibank.minibankref1.jms.QueueAError</dead-letter-address>
-                        <redelivery-delay>60000</redelivery-delay>
-                        <max-delivery-attempts>3</max-delivery-attempts>
                     </address-setting>
                     <address-setting match="jms.queue.org.app.minibank.minibankref1.jms.QueueB">
                         <dead-letter-address>jms.queue.org.app.minibank.minibankref1.jms.QueueBError</dead-letter-address>

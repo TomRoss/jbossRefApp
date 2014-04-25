@@ -35,7 +35,7 @@ public class ClientMDBTest {
 
     EAP6NamingContext ctx2;
 
-    JBNode[] nodes1 = { TestUtil.node2A, TestUtil.node2B };
+    JBNode[] nodes1 = { TestUtil.node1A, TestUtil.node1B };
 
     JBNode[] nodes2 = { TestUtil.node2A, TestUtil.node2B };
 
