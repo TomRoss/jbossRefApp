@@ -11,7 +11,6 @@ SETLOCAL
 call common.cmd
 set VISUALVM_HOME=%JAVA_HOME%
 echo "JBOSS_HOME = %JBOSS_HOME%"
-set DIRNAME=
 
 if "%OS%" == "Windows_NT" (
   set "PROGNAME=%~nx0%"
@@ -19,50 +18,13 @@ if "%OS%" == "Windows_NT" (
   set "PROGNAME=jdr.bat"
 )
 
-rem Find jboss-modules.jar, or we can't continue
-if exist "%JBOSS_HOME%\jboss-modules.jar" (
-    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
-) else (
-  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
-  echo Please check that you are in the bin directory when running this script.
-  goto END
-)
-
-rem Set default module root paths
-if "x%JBOSS_MODULEPATH%" == "x" (
-  set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules\system\layers\base"
-)
-
-rem Setup The Classpath
-set CLASSPATH=
-
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\remoting-jmx\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\remoting3\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\logging\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\xnio\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\xnio\nio\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\sasl\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\marshalling\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\marshalling\river\main
+set "CLASSPATH=%JAVA_HOME%\lib\jconsole.jar"
+set "CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar"
+set "CLASSPATH=%CLASSPATH%;%JBOSS_HOME%\bin\client\jboss-cli-client.jar"
 
 echo "CLASSPATH = %CLASSPATH%"  
-echo "JBOSS_MODULEPATH = %JBOSS_MODULEPATH%"
 echo "%VISUALVM_HOME%\bin\jvisualvm.exe" "-cp " "%CLASSPATH%" %*
 
 "%VISUALVM_HOME%\bin\jvisualvm.exe" "-cp " "%CLASSPATH%" %*
 
-:END
-goto :EOF
-
-:SearchForJars
-pushd %1
-for %%j in (*.jar) do call :ClasspathAdd %1\%%j
-popd
-goto :EOF
-
-:ClasspathAdd
-SET CLASSPATH=%CLASSPATH%;%1
-
-
-:EOF
 ENDLOCAL
