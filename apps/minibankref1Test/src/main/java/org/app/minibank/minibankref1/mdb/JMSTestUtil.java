@@ -24,6 +24,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.DefaultExecutor;
@@ -36,8 +37,6 @@ import org.app.minibank.minibankref1.action.BaseAction1;
 import org.app.minibank.minibankref1.action.CallJPAAction1;
 import org.app.minibank.minibankref1.jmx.ClientJmxRolesTest;
 import org.app.minibank.minibankref1.jpa.MyEntity1;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class JMSTestUtil {
 
@@ -75,20 +74,20 @@ public final class JMSTestUtil {
 
     private final DbType defaultDbType;
 
-    public JMSTestUtil(String testName, int nbLaunchTest, int nbMessageToSend, int displayMsgEvery, DbType defaultDbType, JBNode[] nodes, JBNode[] nodesIn,
-            JBNode[] nodesOut, BaseAction1 action, String opKillOrShutdown, JBNode nodeToKillOrShutdown) {
-        this.testName = testName;
-        this.nbLaunchTest = nbLaunchTest;
-        this.nbMessageToSend = nbMessageToSend;
-        this.displayMsgEvery = displayMsgEvery;
-        this.nodes = nodes;
-        this.nodesIn = nodesIn;
-        this.nodesOut = nodesOut;
-        this.action = action;
-        this.opKillOrShutdown = opKillOrShutdown;
-        this.nodeToKillOrShutdown = nodeToKillOrShutdown;
-        this.isSendToDb = action instanceof CallJPAAction1;
-        this.defaultDbType = defaultDbType;
+    public JMSTestUtil(String aTestName, int aNbLaunchTest, int aNbMessageToSend, int aDisplayMsgEvery, DbType aDefaultDbType, JBNode[] allNodes, JBNode[] allNodesIn,
+            JBNode[] allNodesOut, BaseAction1 anAction, String aOpKillOrShutdown, JBNode aNodeToKillOrShutdown) {
+        this.testName = aTestName;
+        this.nbLaunchTest = aNbLaunchTest;
+        this.nbMessageToSend = aNbMessageToSend;
+        this.displayMsgEvery = aDisplayMsgEvery;
+        this.nodes = allNodes;
+        this.nodesIn = allNodesIn;
+        this.nodesOut = allNodesOut;
+        this.action = anAction;
+        this.opKillOrShutdown = aOpKillOrShutdown;
+        this.nodeToKillOrShutdown = aNodeToKillOrShutdown;
+        this.isSendToDb = anAction instanceof CallJPAAction1;
+        this.defaultDbType = aDefaultDbType;
     }
 
     public void readDbParamsFromCommonScript() throws Exception {
@@ -194,7 +193,8 @@ public final class JMSTestUtil {
         log.info(getMesageInfo() + " Cleaning dir: " + dbDir);
         if (dbDir.exists()) {
             FileUtils.cleanDirectory(dbDir);
-            dbDir.delete();
+            boolean delete = dbDir.delete();
+            if (!delete) log.warn("Could not delete dir:" + dbDir);
         }
     }
 
@@ -243,11 +243,11 @@ public final class JMSTestUtil {
         MessageProducer msgProducer = null;
         EAP6NamingContext ctx = null;
         long start = System.currentTimeMillis();
-        String nodesInStr = "";
+        StringBuilder nodesInStr = new StringBuilder();
         for (JBNode jbNode : nodesIn) {
-            nodesInStr += jbNode + " ";
+            nodesInStr.append(jbNode).append(" ");
         }
-        log.info(getMesageInfo() + " Start sending '" + nbMessageToSend + "' messages to queue '" + getQeueIn() + "' on " + nodesInStr);
+        log.info(getMesageInfo() + " Start sending '" + nbMessageToSend + "' messages to queue '" + getQeueIn() + "' on " + nodesInStr.toString());
         try {
             Properties jmsLookupProps = TestUtil.createJmsProperties(nodesIn);
             ctx = new EAP6NamingContext(jmsLookupProps);
@@ -282,7 +282,7 @@ public final class JMSTestUtil {
         }
         long end = System.currentTimeMillis();
         log.info(getMesageInfo() + " End sending '" + nbMessageToSend + "' messages to queue '" + getQeueIn() + "' in " + (end - start) + " ms on "
-                + nodesInStr);
+                + nodesInStr.toString());
 
     }
 
@@ -304,7 +304,7 @@ public final class JMSTestUtil {
                 jmxc.connect();
                 boolean isRegistered = jmxc.getMBeanServerConnection().isRegistered(objectName);
                 if (!isRegistered) continue;
-                result = jmxc.getMBeanServerConnection().invoke(objectName, operation, new Object[] {}, new String[] {});
+                result = jmxc.getMBeanServerConnection().invoke(objectName, operation, new Object[] { }, new String[] { });
 
             } finally {
                 if (jmxc != null) jmxc.close();
@@ -316,7 +316,7 @@ public final class JMSTestUtil {
         return result;
     }
 
-    public Object getServerAttribute(String attribut, JBNode node) throws Exception {
+    public Object getServerAttribute(String attribut, JBNode node) {
         long start = System.currentTimeMillis();
         Object result = null;
         JMXConnector jmxc = null;
@@ -332,11 +332,15 @@ public final class JMSTestUtil {
             jmxc.connect();
 
             result = jmxc.getMBeanServerConnection().getAttribute(objectName, attribut);
-
+        } catch (Exception e) {
+            log.warn("Could not get JMX Server Attribute '" + attribut + "' on node '" + node + "': " + e, e);
         } finally {
-            if (jmxc != null) jmxc.close();
+            try {
+                if (jmxc != null) jmxc.close();
+            } catch (Exception e) {
+                log.info("Could not close JMX connection: " + e, e);
+            }
         }
-
         long end = System.currentTimeMillis();
         log.info(getMesageInfo() + " getAttribut '" + attribut + "'='" + result + "' in " + (end - start) + " ms");
         return result;
@@ -423,8 +427,7 @@ public final class JMSTestUtil {
         } else {
             log.info(msgInfo);
         }
-        JMSResult result = new JMSResult(testName, loopNumber, retryNumber, (nbMissingElements + nbDuplicateElements == 0), infoNumbers);
-        return result;
+        return new JMSResult(testName, loopNumber, retryNumber, (nbMissingElements + nbDuplicateElements == 0), infoNumbers);
     }
 
     public JMSAllResults checkAllMessagesDelivered(String queueNameToInspect, int maxRetry, int loopNumber, JBNode... nodesToBrowse) throws Exception {
@@ -464,8 +467,7 @@ public final class JMSTestUtil {
     }
 
     private String getMesageInfo() {
-        String info = "[" + testName + " (loop=" + currentLoop + ")]";
-        return info;
+        return "[" + testName + " (loop=" + currentLoop + ")]";
     }
 
     public void runJMSTest() throws Exception {
