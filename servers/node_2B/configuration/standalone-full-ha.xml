@@ -32,6 +32,16 @@
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.jboss.as.weld"/>
     </extensions>
+
+    <vault code="org.app.minibank.security.CustomSecurityVault" module="org.app.minibank.security">
+        <vault-option name="CIPHER_ALGORITHM" value="AES/ECB/PKCS5Padding" />
+        <vault-option name="ITERATION_COUNT" value="54321" />
+        <vault-option name="KEY_ALGORITHM" value="AES" />
+        <vault-option name="KEY_FACTORY" value="PBKDF2WithHmacSHA1" />
+        <vault-option name="KEYSTORE_PASSPHRASE" value="we grow when we share" />
+        <vault-option name="KEYSTORE_URL" value="${jboss.server.config.dir}/keystore/customVault.properties" />
+        <vault-option name="SALT" value="I like enterprise ready products" />
+    </vault>
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
@@ -151,6 +161,14 @@
         <subsystem xmlns="urn:jboss:domain:cmp:1.1"/>
         <subsystem xmlns="urn:jboss:domain:datasources:1.2">
             <datasources>
+                <datasource jndi-name="java:jboss/datasources/ExampleWithVaultDS" pool-name="ExampleWithVaultDS" enabled="true" use-java-context="true">
+                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+                    <driver>h2</driver>
+                    <security>
+                        <user-name>sa</user-name>
+                        <password>${VAULT::ds_ExampleWithVaultDS::password::1}</password>
+                    </security>
+                </datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
