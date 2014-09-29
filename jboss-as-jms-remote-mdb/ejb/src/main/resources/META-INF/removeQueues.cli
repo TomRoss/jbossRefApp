@@ -1,0 +1,2 @@
+jms-queue remove --queue-address=myRaQueue 
+jms-queue remove --queue-address=myPropQueue 

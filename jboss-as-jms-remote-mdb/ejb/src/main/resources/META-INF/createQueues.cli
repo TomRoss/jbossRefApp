@@ -1,0 +1,2 @@
+jms-queue add --queue-address=myRaQueue --entries=[java:jboss/exprted/org/mybank/myRaQueue,java:jboss/org/mybank/myRaQueue]
+jms-queue add --queue-address=myPropQueue --entries=[java:jboss/exprted/org/mybank/myPropQueue,java:jboss/org/mybank/myPropQueue]
